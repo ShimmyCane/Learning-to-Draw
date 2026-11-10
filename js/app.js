@@ -27,7 +27,9 @@
 
   // ---------- reviews: flag (open until fixed), rating (faces), result (right / wrong), printed ----------
   const reviews = () => store.get(KEY, []);
-  const keyOf = r => r.code + ":" + r.kind + ":" + r.created_at;
+  // Postgres returns timestamps as "…+00:00" and this device writes "…Z": compare them as real times, not text.
+  const iso = v => (v ? new Date(v).toISOString() : null);
+  const keyOf = r => r.code + ":" + r.kind + ":" + iso(r.created_at);
   const openFlags = () => reviews().filter(r => r.kind === "flag" && r.status === "open");
   const isFlagged = code => openFlags().some(r => r.code === code);
   function addReview({ code, kind, reason = "", who = "", score = null, note = "" }) {
@@ -73,7 +75,7 @@
 
   // Merge this device's reviews with the table, newest change wins; then send what is only here.
   const COLS = ["code", "kind", "reason", "who", "score", "note", "status", "resolution", "created_at", "updated_at", "resolved_at"];
-  const pick = r => Object.fromEntries(COLS.map(k => [k, r[k] === undefined ? null : r[k]]));
+  const pick = r => Object.assign(Object.fromEntries(COLS.map(k => [k, r[k] === undefined ? null : r[k]])), { created_at: iso(r.created_at), updated_at: iso(r.updated_at), resolved_at: iso(r.resolved_at) });
   async function syncNow() {
     const sb = await ensureSb();
     setState("busy", "Syncing…");
@@ -83,7 +85,7 @@
     const toSend = [];
     for (const r of remote) {
       const l = merged.get(keyOf(r));
-      if (!l || (l.synced && r.updated_at > l.updated_at)) merged.set(keyOf(r), Object.assign(pick(r), { synced: true }));
+      if (!l || (l.synced && Date.parse(r.updated_at) > Date.parse(l.updated_at))) merged.set(keyOf(r), Object.assign(pick(r), { synced: true }));
       else if (!l.synced) toSend.push(l);
     }
     const remoteKeys = new Set(remote.map(keyOf));

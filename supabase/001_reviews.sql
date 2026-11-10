@@ -36,7 +36,7 @@ revoke all on public.ltd_reviews from anon;
 comment on table public.ltd_reviews is 'Learning to Draw: flags, faces, results and prints per sheets (LD- codes). Synced from the pages; read by the review skills.';
 
 insert into public.app_table_registry (app, object_name, object_type, access, description, repo)
-select 'learning-to-draw', 'ltd_reviews', 'table', 'owner', 'Learning to Draw reviews: flags, faces, right/wrong results, print log.', 'ShimmyCane/Felix-Maze'
+select 'learning-to-draw', 'ltd_reviews', 'table', 'owner', 'Learning to Draw reviews: flags, faces, right/wrong results, print log.', 'ShimmyCane/Learning-to-Draw'
 where not exists (select 1 from public.app_table_registry where app = 'learning-to-draw' and object_name = 'ltd_reviews');
 
 -- Check: this should list only other apps' objects, never ltd_*.
