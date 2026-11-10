@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learning to Draw Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/app.css">
+<style>
+  details.p { margin: 14px 0; background: #fff; border: var(--line); border-radius: 18px 18px 18px 6px; box-shadow: var(--pop); }
+  details.p > summary { list-style: none; cursor: pointer; font: 26px var(--hand); min-height: 56px; display: flex; align-items: center; gap: 10px; padding: 6px 16px; }
+  details.p > summary::-webkit-details-marker { display: none; }
+  details.p > summary::after { content: "▸"; margin-left: auto; }
+  details.p[open] > summary::after { content: "▾"; }
+  details.p[open] > summary { background: var(--sun); border-radius: 15px 15px 0 0; }
+  details.p > div { padding: 4px 18px 14px; }
+  .grid10 { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .grid10 div { border: 2.5px solid var(--ink); border-radius: 12px; padding: 8px; background: var(--paper); }
+  .ladder { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ladder span { border: 2.5px solid var(--ink); border-radius: 12px; padding: 6px 12px; background: var(--mint); font-weight: 700; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="title"><a href="../index.html">Learning to Draw</a> <small>Research · what the sheets are built on</small></h1>
+</header>
+<main class="wrap">
+  <details class="p" open>
+    <summary>💭 What I was thinking (round 1)</summary>
+    <div>
+      <p>Drawing starts with a moving line (Klee), then closed lines become shapes, and shapes join into things (Kandinsky's point → line → plane). So the bank is ten kinds that climb that ladder, five sheets each:</p>
+      <div class="ladder"><span>〰️ lines</span><span>🔺 shapes</span><span>🔢 dots</span><span>🦋 mirror</span><span>🔲 grid</span><span>🔤 letters</span><span>🧊 3-D</span><span>🐱 things</span><span>🧶 patterns</span><span>🎨 finish it</span></div>
+      <p>Every guided sheet uses the same fade: <b>look</b> (black ink) → <b>trace</b> (grey dashes) → <b>dots</b> → <b>on your own</b>. The child always sees a finished example first, and the last row is theirs.</p>
+      <p>Levels are 1–3, not ages. Level 1 has the most help (a dotted starter in the "Your turn" box, dots on every mirror point). Level 3 has none.</p>
+      <p>Black and white on Letter portrait, with a lot of white space. Two-sided is fine for line sheets; the heavy pattern and letter fills are better one-sided.</p>
+    </div>
+  </details>
+  <details class="p">
+    <summary>🗂️ The ten kinds × five sheets</summary>
+    <div class="grid10" id="kinds"></div>
+  </details>
+  <details class="p">
+    <summary>📚 Topics we're tracking</summary>
+    <div><p>The full list, with status, is in <code>research/topics.md</code>. Next up: a light-to-dark value scale (Leonardo), Montessori insets filled with stripes, and the pre-writing stroke checklist.</p></div>
+  </details>
+</main>
+<script src="../js/sheets.js"></script>
+<script src="../data/catalog.js"></script>
+<script>
+  document.getElementById("kinds").innerHTML = Object.entries(LTD.CATEGORIES).map(([c, i]) =>
+    `<div><b>${i.icon} ${c}. ${i.name}</b><br><small>${LTD_CATALOG.filter(r => r.cat === c).map(r => r.title).join(" · ")}</small></div>`).join("");
+</script>
+</body>
+</html>

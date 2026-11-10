@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learning to Draw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  .quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 4px 0 6px; }
+  .quick .btn { width: 100%; }
+  details.cat { margin: 14px 0; }
+  details.cat > summary { list-style: none; cursor: pointer; font: 26px var(--hand); min-height: 56px; display: flex; align-items: center; gap: 10px; padding: 6px 16px; background: #fff; border: var(--line); border-radius: 16px; box-shadow: var(--pop); }
+  details.cat > summary::-webkit-details-marker { display: none; }
+  details.cat > summary small { font: 600 15px var(--ui); opacity: .75; margin-left: auto; }
+  details.cat[open] > summary { background: var(--sun); }
+  details.cat .cards { margin-top: 14px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+  .mark::after { content: "▸"; margin-left: 4px; }
+  details[open] .mark::after { content: "▾"; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="title">Learning to Draw <small>Print-and-draw sheets: lines, shapes, letters, 3-D and more</small></h1>
+  <span class="chip sun" id="count">…</span>
+</header>
+<main class="wrap">
+  <div class="quick">
+    <a class="btn go" href="pack.html">🖨️ Print in bulk</a>
+    <a class="btn mint" id="todayBtn" href="sheet.html">⭐ Sheet of the day</a>
+    <a class="btn" href="review.html">🔍 Review</a>
+  </div>
+  <div id="cats"></div>
+</main>
+<script src="js/sheets.js"></script>
+<script src="data/catalog.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/bank.js"></script>
+<script>
+  (function () {
+    const { esc } = APP;
+    APP.init();
+    function render() {
+      try {
+        const list = BANK.bank(), open = new Set(APP.store.get("ltd.openCats", ["A"]));
+        document.getElementById("count").textContent = list.length + " sheets";
+        const ok = list.filter(r => !APP.isFlagged(r.code));
+        const day = Math.floor(Date.now() / 864e5), pick = ok[(day * 7919) % ok.length];
+        if (pick) document.getElementById("todayBtn").href = "sheet.html?code=" + pick.code;
+        const box = document.getElementById("cats"); box.innerHTML = "";
+        Object.entries(LTD.CATEGORIES).forEach(([c, info]) => {
+          const d = document.createElement("details"); d.className = "cat"; d.open = open.has(c);
+          d.innerHTML = `<summary><span>${info.icon}</span> ${c}. ${esc(info.name)} <span class="mark"></span><small>${esc(info.about)}</small></summary><div class="cards"></div>`;
+          d.addEventListener("toggle", () => { d.open ? open.add(c) : open.delete(c); APP.store.set("ltd.openCats", [...open]); });
+          const cards = d.querySelector(".cards");
+          list.filter(r => r.cat === c).forEach(r => {
+            const a = document.createElement("a"); a.className = "card"; a.href = "sheet.html?code=" + r.code;
+            a.innerHTML = `${APP.isFlagged(r.code) ? '<span class="flag">🚩</span>' : ""}<img alt="${esc(r.title)}"><b>${esc(r.title)}</b><div class="meta"><span>#${r.code}</span><span class="t">${"●".repeat(r.level)}${"○".repeat(3 - r.level)}</span></div>`;
+            cards.append(a);
+            APP.lazyThumb(a.querySelector("img"), r.code, () => LTD.svg(r), 340);
+          });
+          box.append(d);
+        });
+      } catch (e) { APP.logError("home: " + e.message); }
+    }
+    APP.onReviews = render;
+    render();
+  })();
+</script>
+</body>
+</html>

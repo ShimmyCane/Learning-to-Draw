@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learning to Draw Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  table { width: 100%; border-collapse: collapse; background: #fff; border: var(--line); border-radius: 14px; overflow: hidden; }
+  th, td { padding: 8px 10px; border-bottom: 2px solid #eee4cc; text-align: left; vertical-align: top; }
+  th { background: var(--mint); font: 700 15px var(--ui); }
+  td .btn { min-height: 44px; font-size: 15px; padding: 4px 10px; }
+  .wide { overflow-x: auto; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="title"><a href="index.html">Learning to Draw</a> <small>Review · flags, faces and what to make next</small></h1>
+</header>
+<main class="wrap">
+  <h2 class="step">🚩 Flagged</h2>
+  <div class="wide" id="flags"></div>
+  <div class="row" style="margin-top:10px"><button class="btn" id="copy" type="button">📋 Copy the list for Claude</button></div>
+  <h2 class="step">😊 How each sheet went</h2>
+  <p class="note">Faces from each sheet's page: 😴 too easy · 😊 just right · 😣 too hard. A sheet with two 😴 is a sign to make a harder one in that kind.</p>
+  <div class="wide" id="faces"></div>
+</main>
+<script src="js/sheets.js"></script>
+<script src="data/catalog.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/bank.js"></script>
+<script>
+  (function () {
+    const { esc } = APP;
+    APP.init();
+    const reason = k => (BANK.REASONS.find(x => x[0] === k) || [, k])[1];
+    const face = r => (r ? BANK.FACES.find(x => x[0] === r.score)[1] : "·");
+    function render() {
+      const flags = APP.openFlags();
+      document.getElementById("flags").innerHTML = flags.length ? `<table><tr><th>Sheet</th><th>Why</th><th>Note</th><th></th></tr>${flags.map(f => {
+        const r = BANK.find(f.code);
+        return `<tr><td><a href="sheet.html?code=${esc(f.code)}">#${esc(f.code)}</a> ${esc(r ? r.title : "")}</td><td>${esc(reason(f.reason))}</td><td>${esc(f.note)}</td><td><button class="btn mint" data-fix="${esc(f.code)}" type="button">✅ Fixed</button> <button class="btn" data-keep="${esc(f.code)}" type="button">Fine as is</button></td></tr>`;
+      }).join("")}</table>` : "<p>Nothing flagged. 🎉</p>";
+      const rows = BANK.bank().map(r => {
+        const y = APP.latest(r.code, "rating", "younger"), o = APP.latest(r.code, "rating", "older");
+        const printed = APP.reviews().filter(x => x.code === r.code && x.kind === "printed").length;
+        return `<tr><td><a href="sheet.html?code=${r.code}">#${r.code}</a></td><td>${esc(r.title)}</td><td>${"●".repeat(r.level)}</td><td>${face(y)}</td><td>${face(o)}</td><td>${printed || ""}</td></tr>`;
+      });
+      document.getElementById("faces").innerHTML = `<table><tr><th>Sheet</th><th>Title</th><th>Level</th><th>Younger</th><th>Older</th><th>Printed</th></tr>${rows.join("")}</table>`;
+    }
+    document.getElementById("flags").addEventListener("click", e => {
+      const f = e.target.closest("[data-fix]"), k = e.target.closest("[data-keep]");
+      if (f) APP.resolveFlag(f.dataset.fix, "fixed", "fixed by hand");
+      if (k) APP.resolveFlag(k.dataset.keep, "kept", "fine on a second look");
+    });
+    document.getElementById("copy").addEventListener("click", async () => {
+      const text = "Learning to Draw: sheets to rework\n" + APP.openFlags().map(f => `- #${f.code}: ${f.reason}${f.note ? " (" + f.note + ")" : ""}`).join("\n");
+      try { await navigator.clipboard.writeText(text); document.getElementById("copy").textContent = "✅ Copied"; } catch (e) { APP.logError("Copy: " + e.message); }
+    });
+    APP.onReviews = render;
+    render();
+  })();
+</script>
+</body>
+</html>

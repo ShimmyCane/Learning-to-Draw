@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learning to Draw Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  .layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, 1fr); gap: 18px; align-items: start; }
+  @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+  .panel { background: #fff; border: var(--line); border-radius: 18px 18px 18px 6px; box-shadow: var(--pop); padding: 12px 14px; margin-bottom: 14px; }
+  .panel h3 { font: 24px var(--hand); margin: 0 0 6px; }
+  .reasons { display: grid; gap: 8px; }
+  .reasons .btn { justify-content: flex-start; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="title"><a href="index.html">Learning to Draw</a> <small id="sub">…</small></h1>
+</header>
+<main class="wrap">
+  <div class="row noprint" style="margin-bottom:12px">
+    <a class="btn" id="prev">◀</a>
+    <button class="btn go" id="print" type="button">🖨️ Print this one</button>
+    <a class="btn" id="next">▶</a>
+  </div>
+  <div class="layout">
+    <div class="paper fit" id="page"></div>
+    <div class="noprint">
+      <div class="panel">
+        <h3>How did it go?</h3>
+        <div class="row" id="who"></div>
+        <div class="faces" id="faces" style="margin-top:8px"></div>
+        <p><small id="faceMsg"></small></p>
+      </div>
+      <div class="panel">
+        <h3>🚩 Flag this sheet</h3>
+        <p id="flagState"><small>Flagged sheets are left out of bulk printing until they are fixed.</small></p>
+        <div class="reasons" id="reasons"></div>
+        <input class="field" id="flagNote" placeholder="A note (optional)" style="width:100%;margin-top:8px">
+        <div class="row" style="margin-top:8px"><button class="btn" id="unflag" type="button" hidden>✅ It's fine now</button></div>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="js/sheets.js"></script>
+<script src="data/catalog.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/bank.js"></script>
+<script>
+  (function () {
+    const { esc } = APP;
+    APP.init();
+    const list = BANK.bank();
+    const rc = BANK.find(APP.param("code")) || list[0];
+    let who = APP.store.get("ltd.who", "younger");
+    document.title = "Learning to Draw #" + rc.code;
+    document.getElementById("sub").textContent = "#" + rc.code + " · " + rc.title + (rc.retired ? " (retired)" : "");
+    document.getElementById("page").innerHTML = LTD.svg(rc);
+    const i = list.findIndex(r => r.code === rc.code);
+    document.getElementById("prev").href = "sheet.html?code=" + list[(i - 1 + list.length) % list.length].code;
+    document.getElementById("next").href = "sheet.html?code=" + list[(i + 1) % list.length].code;
+    document.getElementById("print").addEventListener("click", () => { APP.addReview({ code: rc.code, kind: "printed" }); APP.printPages([LTD.svg(rc)]); });
+
+    function render() {
+      document.getElementById("who").innerHTML = BANK.WHO.map(([k, t]) => `<button class="btn${k === who ? " on" : ""}" data-who="${k}" type="button">${t}</button>`).join("");
+      const r = APP.latest(rc.code, "rating", who);
+      document.getElementById("faces").innerHTML = BANK.FACES.map(([n, f, t]) => `<button class="btn${r && r.score === n ? " on" : ""}" data-score="${n}" type="button" title="${t}">${f}</button>`).join("");
+      document.getElementById("faceMsg").textContent = r ? "Saved: " + BANK.FACES.find(x => x[0] === r.score)[2] + "." : "Tap a face after drawing.";
+      const flag = APP.openFlags().find(f => f.code === rc.code);
+      document.getElementById("reasons").innerHTML = BANK.REASONS.map(([k, t]) => `<button class="btn${flag && flag.reason === k ? " on" : ""}" data-reason="${k}" type="button">${t}</button>`).join("");
+      document.getElementById("flagState").innerHTML = flag ? `<b>🚩 Flagged: ${esc((BANK.REASONS.find(x => x[0] === flag.reason) || [, flag.reason])[1])}</b>${flag.note ? " · " + esc(flag.note) : ""}` : "<small>Flagged sheets are left out of bulk printing until they are fixed.</small>";
+      document.getElementById("unflag").hidden = !flag;
+    }
+    document.getElementById("who").addEventListener("click", e => { const b = e.target.closest("[data-who]"); if (!b) return; who = b.dataset.who; APP.store.set("ltd.who", who); render(); });
+    document.getElementById("faces").addEventListener("click", e => { const b = e.target.closest("[data-score]"); if (b) APP.addReview({ code: rc.code, kind: "rating", who, score: +b.dataset.score }); });
+    document.getElementById("reasons").addEventListener("click", e => { const b = e.target.closest("[data-reason]"); if (b) APP.addReview({ code: rc.code, kind: "flag", reason: b.dataset.reason, note: document.getElementById("flagNote").value.trim() }); });
+    document.getElementById("unflag").addEventListener("click", () => APP.resolveFlag(rc.code, "kept", "fine on a second look"));
+    APP.onReviews = render;
+    render();
+  })();
+</script>
+</body>
+</html>

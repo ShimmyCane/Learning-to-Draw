@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learning to Draw Print in Bulk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  .sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 14px; }
+  .sheets .card { position: relative; }
+  .sheets .card .side { position: absolute; top: 6px; left: 6px; background: var(--sun); border: 2px solid var(--ink); border-radius: 8px; font-size: 12px; font-weight: 700; padding: 0 6px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 class="title"><a href="index.html">Learning to Draw</a> <small>Print in bulk · Letter, one- or two-sided</small></h1>
+</header>
+<main class="wrap">
+  <div class="noprint">
+    <div class="row">
+      <button class="btn go" id="print" type="button">🖨️ Print <span id="n">0</span> pages</button>
+      <button class="btn" id="shuffle" type="button">🎲 Mix them up</button>
+    </div>
+    <h2 class="step">Which kinds?</h2>
+    <div class="tags" id="cats"></div>
+    <h2 class="step">Level</h2>
+    <div class="tags" id="levels"></div>
+    <h2 class="step">Paper</h2>
+    <div class="pick">
+      <label><input type="radio" name="sides" value="one"> One-sided</label>
+      <label><input type="radio" name="sides" value="two"> Two-sided</label>
+    </div>
+    <div class="pick" id="flipRow">
+      <b>Printer flips on the…</b>
+      <label><input type="radio" name="flip" value="long"> long edge <small>(like a book; right for most portrait prints)</small></label>
+      <label><input type="radio" name="flip" value="short"> short edge <small>(the backs are turned upside down for you)</small></label>
+    </div>
+    <p class="note" id="how"></p>
+    <div class="sheets" id="sheets"></div>
+  </div>
+</main>
+<script src="js/sheets.js"></script>
+<script src="data/catalog.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/bank.js"></script>
+<script>
+  /* Bulk printing: pick the kinds and levels, one- or two-sided. Flagged and retired sheets are left out.
+     Two-sided: page 1 is the front of the first sheet of paper, page 2 its back, and so on. Portrait pages read upright
+     when the printer flips on the long edge. If yours flips on the short edge, the backs are turned for you. */
+  (function () {
+    const { esc, store } = APP;
+    APP.init();
+    const cats = new Set(store.get("ltd.packCats", Object.keys(LTD.CATEGORIES)));
+    const levels = new Set(store.get("ltd.packLevels", [1, 2, 3]));
+    let sides = store.get("ltd.sides", "one"), flip = store.get("ltd.flip", "long"), order = null;
+    const chosen = () => {
+      const l = BANK.bank().filter(r => cats.has(r.cat) && levels.has(r.level) && !APP.isFlagged(r.code));
+      return order ? order.map(c => l.find(r => r.code === c)).filter(Boolean).concat(l.filter(r => !order.includes(r.code))) : l;
+    };
+    function render() {
+      document.getElementById("cats").innerHTML = Object.entries(LTD.CATEGORIES).map(([c, i]) => `<button class="tag${cats.has(c) ? " on" : ""}" data-cat="${c}" type="button">${i.icon} ${esc(i.name)}</button>`).join("");
+      document.getElementById("levels").innerHTML = [1, 2, 3].map(n => `<button class="tag${levels.has(n) ? " on" : ""}" data-level="${n}" type="button">${"●".repeat(n)}${"○".repeat(3 - n)}</button>`).join("");
+      document.querySelectorAll("input[name=sides]").forEach(x => { x.checked = x.value === sides; });
+      document.querySelectorAll("input[name=flip]").forEach(x => { x.checked = x.value === flip; });
+      document.getElementById("flipRow").hidden = sides !== "two";
+      const list = chosen(), flagged = BANK.bank().filter(r => APP.isFlagged(r.code)).length;
+      document.getElementById("n").textContent = list.length;
+      const paper = sides === "two" ? Math.ceil(list.length / 2) : list.length;
+      document.getElementById("how").textContent = `${list.length} pages on ${paper} sheet${paper === 1 ? "" : "s"} of paper.` + (flagged ? ` ${flagged} flagged sheet${flagged === 1 ? " is" : "s are"} left out.` : "") + (sides === "two" ? " Turn on two-sided printing in the print box too." : "");
+      const box = document.getElementById("sheets"); box.innerHTML = "";
+      list.forEach((r, i) => {
+        const a = document.createElement("a"); a.className = "card"; a.href = "sheet.html?code=" + r.code;
+        a.innerHTML = `${sides === "two" ? `<span class="side">${i % 2 ? "back" : "front"} ${Math.floor(i / 2) + 1}</span>` : ""}<img alt=""><b>${esc(r.title)}</b><div class="meta"><span>#${r.code}</span></div>`;
+        box.append(a); APP.lazyThumb(a.querySelector("img"), r.code, () => LTD.svg(r), 300);
+      });
+    }
+    document.getElementById("cats").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (!b) return; cats.has(b.dataset.cat) ? cats.delete(b.dataset.cat) : cats.add(b.dataset.cat); store.set("ltd.packCats", [...cats]); render(); });
+    document.getElementById("levels").addEventListener("click", e => { const b = e.target.closest("[data-level]"); if (!b) return; const n = +b.dataset.level; levels.has(n) ? levels.delete(n) : levels.add(n); store.set("ltd.packLevels", [...levels]); render(); });
+    document.querySelectorAll("input[name=sides]").forEach(x => x.addEventListener("change", () => { sides = x.value; store.set("ltd.sides", sides); render(); }));
+    document.querySelectorAll("input[name=flip]").forEach(x => x.addEventListener("change", () => { flip = x.value; store.set("ltd.flip", flip); render(); }));
+    document.getElementById("shuffle").addEventListener("click", () => { order = chosen().map(r => r.code).sort(() => Math.random() - 0.5); render(); });
+    document.getElementById("print").addEventListener("click", () => {
+      const list = chosen(); if (!list.length) return;
+      list.forEach(r => APP.addReview({ code: r.code, kind: "printed" }));
+      APP.printPages(list.map(r => LTD.svg(r)), { duplex: sides === "two", flip });
+    });
+    render();
+  })();
+</script>
+</body>
+</html>
