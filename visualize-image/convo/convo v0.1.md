@@ -16,14 +16,14 @@
 
 ## Questions (answer inline)
 1. **Frames per step.** One frame per step (six), or several per step (e.g. mass in three: planes, big objects, anchors)?
-   > 
+   > Yes (several frames per step).
 2. **Who draws.** Should the page draw frames from a scene JSON (repeatable), or will the frames be images made elsewhere and shown in order?
-   > 
+   > Repeatable from the scene file (JSON-style recipe).
 3. **The living room.** Can you drop the photo and the 2-D result in `private/`? I'll read the layer vocabulary from the result.
-   > 
+   > Use the uploaded image (the museum kitchen, VI-001).
 4. **Print.** Do you want printable worksheets of the steps (like Learning to Draw), or on-screen only?
-   > 
+   > Printable. Also a large gallery display option to see frames big on screen.
 5. **Filters.** Which first: round dots, octagon dots, triangle facets, or lines?
-   > 
+   > All four.
 6. **Detail library references.** Which of them should I read first, and where is the archive?
-   > 
+   > They are from the Detail library repo (not attached to this session yet).

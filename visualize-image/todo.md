@@ -16,6 +16,8 @@
 - [ ] Upload the living-room photo and the 2-D result (into `private/`) to compare the layer vocabulary
 
 ## Next
+- [ ] Printable frame sheets (Letter) and a large gallery display mode (answers in convo v0.1)
+- [ ] Read the Detail library repo references (attach it to a session)
 - [ ] Trace the layers from a photo semi-automatically instead of by hand
 - [ ] Printable frame sheets
 - [ ] Try on a second, different image (outdoor, with a real horizon)
