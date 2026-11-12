@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Make a worksheet · Visualize Image</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+ .prog{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+ .prog .tag{cursor:default;min-height:38px}
+ .layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,1fr);gap:18px;align-items:start}
+ @media(max-width:820px){.layout{grid-template-columns:1fr}}
+ .panel{background:#fff;border:var(--line);border-radius:18px 18px 18px 6px;box-shadow:var(--pop);padding:12px 14px;margin-bottom:14px}
+ .panel h3{font:24px var(--hand);margin:0 0 6px}
+ .stage{background:#fff;border:var(--line);border-radius:18px 18px 18px 6px;box-shadow:0 6px 0 var(--ink);padding:8px;touch-action:none}
+ canvas{display:block;width:100%;height:auto;border-radius:10px;background:#f6f1e0}
+ .hero{text-align:center;padding:30px 12px}
+ .hero h2{font:40px var(--hand);margin:0 0 6px;font-weight:400}
+ .hero .row{justify-content:center;margin-top:14px}
+ input[type=range]{width:100%;accent-color:var(--coral-dark);height:36px}
+ .legend span{display:inline-block;margin-right:10px;font-weight:700;font-size:14px}
+ .legend i{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;vertical-align:-2px;border:2px solid var(--ink)}
+ .frame svg{display:block;width:100%;height:auto}
+ .frame{max-width:min(100%,calc((100dvh - 330px) * var(--ar,1)));margin:0 auto}
+</style></head>
+<body>
+<header class="top"><h1 class="title"><a href="index.html">Visualize Image</a> <small>Make a worksheet from your own photo</small></h1></header>
+<main class="wrap">
+ <div class="prog noprint" id="prog"></div>
+
+ <section id="sPhoto">
+  <div class="panel hero">
+   <h2>Start with a photo</h2>
+   <p>Take one or choose one. It stays on this device. Nothing is uploaded.</p>
+   <div class="row"><label class="btn go" for="cam">📷 Take a photo</label><label class="btn mint" for="pick">🖼️ Choose a photo</label></div>
+   <input id="cam" type="file" accept="image/*" capture="environment" hidden><input id="pick" type="file" accept="image/*" hidden>
+   <p id="err" class="note" hidden></p>
+  </div>
+  <div class="panel"><h3>What happens next</h3>
+   <ol><li><b>Crop and frame:</b> the page suggests a crop and a horizon. You adjust them.</li>
+   <li><b>Big shapes, what sits on them, bold lines, light to dark, colors, dots:</b> the page finds the shapes in code. You watch each step and can change a few settings.</li>
+   <li><b>Seven worksheets</b> are made for you to print. The shapes are rough: you can save a note asking Claude to build a nicer one later.</li></ol></div>
+ </section>
+
+ <section id="sCrop" hidden>
+  <div class="layout">
+   <div>
+    <div class="stage"><canvas id="main" width="720" height="720"></canvas></div>
+    <p class="legend"><span><i style="background:#fff"></i>crop</span><span><i style="background:#c0392b"></i>horizon (drag it)</span><span><i style="background:#3aa7ff"></i>contrast</span></p>
+   </div>
+   <div>
+    <div class="panel"><h3>1 · Crop and frame</h3>
+     <p class="note" id="rule1"></p>
+     <label><b>Zoom</b> <span id="zv">80%</span></label><input id="zoom" type="range" min="45" max="100" value="80">
+     <p><small>Drag the white box to move it. Drag its corner to resize. The best contrast should sit on a thirds crossing.</small></p>
+     <div class="row"><button class="btn" id="suggest" type="button">✨ Suggest again</button><button class="btn" id="play" type="button">▶ Zoom in</button></div>
+     <p id="why"></p>
+    </div>
+    <div class="panel"><h3>The crop, zoomed</h3><canvas id="prev" width="560" height="560"></canvas></div>
+    <div class="row"><button class="btn" id="cBack" type="button">◀ Another photo</button><button class="btn go" id="cNext" type="button">Next: big shapes ▶</button></div>
+   </div>
+  </div>
+ </section>
+
+ <section id="sStep" hidden>
+  <div class="layout">
+   <div class="paper frame" id="fr"></div>
+   <div>
+    <div class="panel"><h3 id="stTitle"></h3><p class="note" id="stRule"></p><p id="stHere"></p><div id="stCtl"></div></div>
+    <div class="row"><button class="btn" id="sBack" type="button">◀ Back</button><button class="btn go" id="sNext" type="button">Next ▶</button></div>
+   </div>
+  </div>
+ </section>
+
+ <section id="sDone" hidden>
+  <div class="panel"><h3>Your worksheets are ready</h3>
+   <p id="doneMsg">Seven sheets, one per step, with help levels 1 to 3.</p>
+   <div class="row"><button class="btn go" id="dPrint" type="button">🖨️ Print all 7</button><a class="btn mint" id="dSheets" href="#">📄 Open the sheets</a><a class="btn" id="dGallery" href="#">🖼️ Gallery view</a></div>
+  </div>
+  <div class="panel"><h3>What the code did, and what it could not</h3>
+   <p><b>Done in code:</b> the crop, the horizon, the big shapes, the order they sit in, light to dark, a small palette, and the seven sheets.</p>
+   <p><b>Needs a person (Claude):</b> truer shapes, a real idea of what the picture is about, and choosing what to leave out. The shapes here are rough boxes and blobs.</p>
+   <p id="noteState"></p>
+   <div class="row"><button class="btn" id="dCopy" type="button">📋 Copy a note for Claude</button><button class="btn" id="dAgain" type="button">Start over</button></div>
+  </div>
+ </section>
+ <div id="printArea" class="printOnly"></div>
+</main>
+<script src="js/settings.js"></script>
+<script src="js/viz.js"></script>
+<script src="js/ws.js"></script>
+<script src="js/mine.js"></script>
+<script>
+(function () {
+  VS.mount({});
+  const $ = id => document.getElementById(id), show = id => ["sPhoto", "sCrop", "sStep", "sDone"].forEach(s => $(s).hidden = s !== id);
+  const NAMES = ["Photo", "Crop", "Big shapes", "Add", "Bold", "Light to dark", "Colors", "Dots", "Print"];
+  const STAGE = { 2: ["2c", "2"], 3: ["3b", "3"], 4: ["4", "4"], 5: ["5a", "5"], 6: ["5b", "5"], 7: ["6a", "6"] };
+  const TITLE = { 2: "2 · Big shapes first", 3: "3 · Add what sits on them", 4: "4 · Make the lines bold", 5: "5 · Light to dark", 6: "6 · A few colors", 7: "7 · See it as dots" };
+  const main = $("main"), mx = main.getContext("2d"), prev = $("prev"), px = prev.getContext("2d");
+  let img = null, crop = null, hy = .4, cp = { x: .5, y: .5 }, drag = null, anim = null, stage = 0, sc = null, saved = null, lens = "6a";
+  const opt = { masses: 6, values: 5, colors: 5 };
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  $("prog").innerHTML = NAMES.map((n, i) => `<span class="tag" data-i="${i}">${i + 1}. ${n}</span>`).join("");
+  function go(i) {
+    stage = i; document.querySelectorAll("#prog .tag").forEach(t => { t.classList.toggle("on", +t.dataset.i === i); t.style.opacity = +t.dataset.i > i ? .55 : 1; });
+    if (i === 0) show("sPhoto"); else if (i === 1) { show("sCrop"); draw(); } else if (i === 8) { show("sDone"); finish(); } else { show("sStep"); step(); }
+    scrollTo(0, 0);
+  }
+
+  // ---------- 0 · photo ----------
+  function load(file) {
+    if (!file) return; $("err").hidden = true;
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { img = im; URL.revokeObjectURL(url); const a = analyze(); cp = a.cp; hy = a.hy; $("zoom").value = 80; crop = suggest(.8); fit(); explain(); go(1); play(); };
+    im.onerror = () => { $("err").textContent = "That file could not be opened as a picture."; $("err").hidden = false; };
+    im.src = url;
+  }
+  $("cam").onchange = e => load(e.target.files[0]); $("pick").onchange = e => load(e.target.files[0]);
+
+  // ---------- 1 · crop and frame (find the contrast and the horizon, suggest a crop) ----------
+  function analyze() {
+    const cols = 64, rows = Math.max(8, Math.round(cols * img.naturalHeight / img.naturalWidth)), c = document.createElement("canvas");
+    c.width = cols; c.height = rows; const g = c.getContext("2d", { willReadFrequently: true }); g.drawImage(img, 0, 0, cols, rows);
+    const d = g.getImageData(0, 0, cols, rows).data, L = (x, y) => { const i = (clamp(y, 0, rows - 1) * cols + clamp(x, 0, cols - 1)) * 4; return .3 * d[i] + .59 * d[i + 1] + .11 * d[i + 2]; };
+    const E = new Float32Array(cols * rows), rowS = new Float32Array(rows);
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const gx = L(x + 1, y) - L(x - 1, y), gy = L(x, y + 1) - L(x, y - 1); E[y * cols + x] = Math.hypot(gx, gy); rowS[y] += Math.abs(gy); }
+    let best = -1, bx = cols / 2, by = rows / 2;
+    for (let y = 3; y < rows - 3; y++) for (let x = 3; x < cols - 3; x++) { let s = 0; for (let j = -2; j <= 2; j++) for (let i = -2; i <= 2; i++) s += E[(y + j) * cols + x + i]; if (s > best) { best = s; bx = x; by = y; } }
+    let hr = Math.round(rows * .4), hb = -1; for (let y = Math.round(rows * .15); y < Math.round(rows * .85); y++) if (rowS[y] > hb) { hb = rowS[y]; hr = y; }
+    return { cp: { x: (bx + .5) / cols, y: (by + .5) / rows }, hy: (hr + .5) / rows };
+  }
+  function suggest(z) {
+    const w = z, h = z; let bestC = null, bestD = 1e9;
+    [1 / 3, 2 / 3].forEach(tx => [1 / 3, 2 / 3].forEach(ty => { const x0 = cp.x - tx * w, y0 = cp.y - ty * h, cx = clamp(x0, 0, 1 - w), cy = clamp(y0, 0, 1 - h), dd = Math.abs(cx - x0) + Math.abs(cy - y0); if (dd < bestD) { bestD = dd; bestC = { x: cx, y: cy, w, h }; } }));
+    return bestC;
+  }
+  function fit() { const ar = img.naturalWidth / img.naturalHeight; main.width = 720; main.height = Math.round(720 / ar); prev.width = 560; prev.height = Math.round(560 / ar); }
+  function draw() {
+    if (!img) return; const W = main.width, H = main.height; mx.clearRect(0, 0, W, H); mx.drawImage(img, 0, 0, W, H);
+    const c = { x: crop.x * W, y: crop.y * H, w: crop.w * W, h: crop.h * H };
+    mx.fillStyle = "rgba(0,0,0,.55)"; mx.beginPath(); mx.rect(0, 0, W, H); mx.rect(c.x, c.y, c.w, c.h); mx.fill("evenodd");
+    mx.strokeStyle = "rgba(255,255,255,.85)"; mx.lineWidth = 1.5;
+    for (let i = 1; i < 3; i++) { mx.beginPath(); mx.moveTo(c.x + c.w * i / 3, c.y); mx.lineTo(c.x + c.w * i / 3, c.y + c.h); mx.moveTo(c.x, c.y + c.h * i / 3); mx.lineTo(c.x + c.w, c.y + c.h * i / 3); mx.stroke(); }
+    mx.strokeStyle = "#fff"; mx.lineWidth = 4; mx.strokeRect(c.x, c.y, c.w, c.h);
+    mx.fillStyle = "#fff"; mx.strokeStyle = "#111"; mx.lineWidth = 2; mx.beginPath(); mx.arc(c.x + c.w, c.y + c.h, 13, 0, 7); mx.fill(); mx.stroke();
+    mx.strokeStyle = "#c0392b"; mx.lineWidth = 3; mx.setLineDash([14, 9]); mx.beginPath(); mx.moveTo(0, hy * H); mx.lineTo(W, hy * H); mx.stroke(); mx.setLineDash([]);
+    mx.strokeStyle = "#3aa7ff"; mx.lineWidth = 4; mx.beginPath(); mx.arc(cp.x * W, cp.y * H, 22, 0, 7); mx.stroke();
+    drawPrev(crop);
+  }
+  function drawPrev(r) {
+    const W = prev.width, H = prev.height, iw = img.naturalWidth, ih = img.naturalHeight; px.clearRect(0, 0, W, H); px.drawImage(img, r.x * iw, r.y * ih, r.w * iw, r.h * ih, 0, 0, W, H);
+    px.strokeStyle = "rgba(255,255,255,.8)"; px.lineWidth = 1.5; for (let i = 1; i < 3; i++) { px.beginPath(); px.moveTo(W * i / 3, 0); px.lineTo(W * i / 3, H); px.moveTo(0, H * i / 3); px.lineTo(W, H * i / 3); px.stroke(); }
+    const hh = (hy - r.y) / r.h; if (hh >= 0 && hh <= 1) { px.strokeStyle = "#c0392b"; px.lineWidth = 3; px.setLineDash([12, 8]); px.beginPath(); px.moveTo(0, hh * H); px.lineTo(W, hh * H); px.stroke(); px.setLineDash([]); }
+  }
+  function play() { cancelAnimationFrame(anim); const t0 = performance.now(), full = { x: 0, y: 0, w: 1, h: 1 }, to = { ...crop }, ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    (function s(now) { const t = clamp((now - t0) / 1000, 0, 1), e = ease(t), r = {}; ["x", "y", "w", "h"].forEach(k => r[k] = full[k] + (to[k] - full[k]) * e); drawPrev(r); if (t < 1) anim = requestAnimationFrame(s); })(t0); }
+  function explain() {
+    const hh = (hy - crop.y) / crop.h, where = hh < 0 ? "above your crop, so you will see tilted surfaces" : hh > 1 ? "below your crop" : hh < .33 ? "high in your crop: mostly ground or floor below it" : hh > .66 ? "low in your crop: mostly sky or ceiling above it" : "near the middle of your crop";
+    $("why").textContent = "Most contrast is at " + Math.round(cp.x * 100) + "% across, " + Math.round(cp.y * 100) + "% down. The crop puts it on a third. The horizon sits " + where + "."; $("zv").textContent = Math.round(crop.w * 100) + "%";
+  }
+  function pos(e) { const r = main.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; }
+  main.addEventListener("pointerdown", e => {
+    if (!img) return; const p = pos(e), R = main.getBoundingClientRect(), tol = 24 / R.width, k = main.width / main.height;
+    const inBox = p.x > crop.x && p.x < crop.x + crop.w && p.y > crop.y && p.y < crop.y + crop.h, inner = p.x > crop.x + .05 && p.x < crop.x + crop.w - .05 && p.y > crop.y + .05 && p.y < crop.y + crop.h - .05;
+    if (Math.hypot(p.x - (crop.x + crop.w), (p.y - (crop.y + crop.h)) / k) < tol * 1.2) drag = { t: "size" };
+    else if (Math.abs(p.y - hy) < tol * k && !inner) drag = { t: "hz" };
+    else if (inBox) drag = { t: "move", dx: p.x - crop.x, dy: p.y - crop.y };
+    if (drag) main.setPointerCapture(e.pointerId);
+  });
+  main.addEventListener("pointermove", e => {
+    if (!drag) return; const p = pos(e);
+    if (drag.t === "move") { crop.x = clamp(p.x - drag.dx, 0, 1 - crop.w); crop.y = clamp(p.y - drag.dy, 0, 1 - crop.h); }
+    else if (drag.t === "hz") hy = clamp(p.y, 0, 1);
+    else { const w = clamp(Math.max(p.x - crop.x, p.y - crop.y), .2, Math.min(1 - crop.x, 1 - crop.y)); crop.w = w; crop.h = w; $("zoom").value = Math.round(w * 100); }
+    explain(); draw();
+  });
+  const up = () => { if (drag) { drag = null; play(); } }; main.addEventListener("pointerup", up); main.addEventListener("pointercancel", up);
+  $("zoom").oninput = e => { crop = suggest(+e.target.value / 100); explain(); draw(); }; $("zoom").onchange = play;
+  $("suggest").onclick = () => { const a = analyze(); cp = a.cp; hy = a.hy; crop = suggest(+$("zoom").value / 100); explain(); draw(); play(); };
+  $("play").onclick = play; $("cBack").onclick = () => go(0);
+  $("cNext").onclick = () => { rebuild(); go(2); };
+
+  // ---------- 2 to 7 · the code builds the scene; you watch each step ----------
+  function rebuild() { sc = VM.build(img, { crop, hy, cp }, opt); saved = null; }
+  function step() {
+    const [fid, st] = STAGE[stage], f = VI.FRAMES.find(x => x.id === (stage === 7 ? lens : fid)), S = VI.STEPS[st];
+    const c = sc.crop; $("fr").style.setProperty("--ar", c.w / c.h);
+    $("fr").innerHTML = VI.frameSVG(sc, f, false);
+    $("stTitle").textContent = TITLE[stage]; $("stRule").textContent = S.rule; $("stHere").textContent = "In this picture: " + (sc.notes[f.id] || "");
+    let ctl = "";
+    if (stage === 2) ctl = `<label><b>How many big shapes</b> <span id="v2">${opt.masses}</span></label><input id="r2" type="range" min="4" max="8" value="${opt.masses}">`;
+    if (stage === 5) ctl = `<div class="row"><b>Values</b><button class="btn ${opt.values === 3 ? "on" : ""}" data-v="3" type="button">3</button><button class="btn ${opt.values === 5 ? "on" : ""}" data-v="5" type="button">5</button></div>`;
+    if (stage === 6) ctl = `<label><b>How many colors</b> <span id="v6">${opt.colors}</span></label><input id="r6" type="range" min="3" max="5" value="${opt.colors}">`;
+    if (stage === 7) ctl = `<div class="row">${[["6a", "Round dots"], ["6b", "Octagons"], ["6c", "Facets"], ["6d", "Lines"]].map(([k, n]) => `<button class="btn ${k === lens ? "on" : ""}" data-l="${k}" type="button">${n}</button>`).join("")}</div>`;
+    $("stCtl").innerHTML = ctl;
+    const r2 = $("r2"), r6 = $("r6");
+    if (r2) r2.oninput = () => { opt.masses = +r2.value; $("v2").textContent = opt.masses; rebuild(); const fr = $("fr"); fr.innerHTML = VI.frameSVG(sc, VI.FRAMES.find(x => x.id === "2c"), false); $("stHere").textContent = "In this picture: " + sc.notes["2b"]; };
+    if (r6) r6.oninput = () => { opt.colors = +r6.value; $("v6").textContent = opt.colors; rebuild(); $("fr").innerHTML = VI.frameSVG(sc, VI.FRAMES.find(x => x.id === "5b"), false); };
+    document.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { opt.values = +b.dataset.v; rebuild(); step(); });
+    document.querySelectorAll("[data-l]").forEach(b => b.onclick = () => { lens = b.dataset.l; step(); });
+    $("sNext").textContent = stage === 7 ? "Make my worksheets ▶" : "Next ▶";
+  }
+  $("sBack").onclick = () => go(stage - 1); $("sNext").onclick = () => go(stage + 1);
+
+  // ---------- 8 · save and print ----------
+  function finish() {
+    if (!saved) saved = VM.save(sc);
+    if (!saved) { $("doneMsg").textContent = "Could not save on this device (storage full or blocked). You can still print now."; saved = Object.assign({}, sc, { id: "MY-draft" }); $("dSheets").hidden = $("dGallery").hidden = true; return; }
+    $("dSheets").hidden = $("dGallery").hidden = false; $("dSheets").href = "sheet.html?id=" + saved.id; $("dGallery").href = "scene.html?id=" + saved.id;
+    $("doneMsg").textContent = "Saved on this device as " + saved.id + ". Seven sheets, one per step, with help levels 1 to 3 (change the level in ⚙️).";
+    $("noteState").textContent = "Print these as they are, or copy the note below and give it to Claude with your photo for a hand-built version.";
+  }
+  $("dPrint").onclick = () => { $("printArea").innerHTML = [1, 2, 3, 4, 5, 6, 7].map(k => '<div class="print-sheet">' + WS.sheet(saved, k, VS.level()) + '</div>').join(""); setTimeout(() => window.print(), 80); };
+  $("dCopy").onclick = () => { const s = VM.claudeNote(saved); (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(() => $("noteState").textContent = "Copied. Paste it to Claude with your photo.", () => prompt("Copy this:", s)); };
+  $("dAgain").onclick = () => { img = null; sc = null; saved = null; go(0); };
+  go(0);
+})();
+</script></body></html>

@@ -33,12 +33,13 @@
 <script src="js/settings.js"></script>
 <script src="js/viz.js"></script>
 <script src="js/ws.js"></script>
+<script src="js/mine.js"></script>
 <script>
 (function(){
  const q=new URLSearchParams(location.search), id=q.get("id")||"VI-002", $=s=>document.getElementById(s);
  let n=Math.min(7,Math.max(1,+q.get("s")||1)), lvl=q.get("level")?Math.min(3,Math.max(1,+q.get("level")||1)):VS.level();
  const code=k=>id+"-"+k, vis=()=>[1,2,3,4,5,6,7].filter(k=>!VS.sheetGone(code(k)));
- const sc0=document.createElement("script"); sc0.src="data/scenes/"+id+".js"; sc0.onload=start; sc0.onerror=()=>{$("sub").textContent="Scene "+id+" not found";VS.mount({})}; document.head.appendChild(sc0);
+ VM.loadScene(id,()=>start(),()=>{$("sub").textContent="Scene "+id+" not found";VS.mount({})});
  function start(){
   const sc=VI.scenes[id]; document.title="#"+id+" · Visualize Image"; $("sub").textContent=sc.title+" ("+sc.id+")"; $("gallery").href="scene.html?id="+id;
   WS.STEPS.forEach(st=>{const b=document.createElement("button");b.className="tag";b.textContent=st.n+". "+st.title;b.dataset.n=st.n;b.onclick=()=>{n=st.n;draw()};$("steps").appendChild(b)});
