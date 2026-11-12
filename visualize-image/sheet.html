@@ -24,36 +24,42 @@
  <div class="layout">
   <div class="paper fit" id="page"></div>
   <div class="noprint">
-   <div class="panel"><h3>Help</h3><div class="row" id="levels"></div><p><small>1 = most help (trace), 2 = some (dots), 3 = none. Levels are about help, not age.</small></p></div>
+   <div class="panel"><h3>Help</h3><div class="row" id="levels"></div><p><small>1 = a 20% ghost to trace over. 2 = a few thin dashed lines on the biggest shapes. 3 = just corner dots and a horizon dot. Levels are about help, not age.</small></p></div>
    <div class="panel"><h3>See it large</h3><p><a class="btn mint" id="gallery" href="#">🖼️ Gallery view</a></p></div>
   </div>
  </div>
  <div id="printArea" class="printOnly"></div>
 </main>
+<script src="js/settings.js"></script>
 <script src="js/viz.js"></script>
 <script src="js/ws.js"></script>
 <script>
 (function(){
- const q=new URLSearchParams(location.search), id=q.get("id")||"VI-002";
- let n=Math.min(7,Math.max(1,+q.get("s")||1)), lvl=Math.min(3,Math.max(1,+q.get("level")||1));
- const $=s=>document.getElementById(s);
- const sc0=document.createElement("script"); sc0.src="data/scenes/"+id+".js"; sc0.onload=start; sc0.onerror=()=>$("sub").textContent="Scene "+id+" not found"; document.head.appendChild(sc0);
+ const q=new URLSearchParams(location.search), id=q.get("id")||"VI-002", $=s=>document.getElementById(s);
+ let n=Math.min(7,Math.max(1,+q.get("s")||1)), lvl=q.get("level")?Math.min(3,Math.max(1,+q.get("level")||1)):VS.level();
+ const code=k=>id+"-"+k, vis=()=>[1,2,3,4,5,6,7].filter(k=>!VS.sheetGone(code(k)));
+ const sc0=document.createElement("script"); sc0.src="data/scenes/"+id+".js"; sc0.onload=start; sc0.onerror=()=>{$("sub").textContent="Scene "+id+" not found";VS.mount({})}; document.head.appendChild(sc0);
  function start(){
-  const sc=VI.scenes[id]; document.title="#"+id+" · Visualize Image";
-  $("sub").textContent=sc.title+" ("+sc.id+")"; $("gallery").href="scene.html?id="+id;
+  const sc=VI.scenes[id]; document.title="#"+id+" · Visualize Image"; $("sub").textContent=sc.title+" ("+sc.id+")"; $("gallery").href="scene.html?id="+id;
   WS.STEPS.forEach(st=>{const b=document.createElement("button");b.className="tag";b.textContent=st.n+". "+st.title;b.dataset.n=st.n;b.onclick=()=>{n=st.n;draw()};$("steps").appendChild(b)});
-  [1,2,3].forEach(l=>{const b=document.createElement("button");b.className="btn";b.textContent=l+" "+"●".repeat(l);b.dataset.l=l;b.onclick=()=>{lvl=l;draw()};$("levels").appendChild(b)});
-  $("prev").onclick=()=>{n=n>1?n-1:7;draw()}; $("next").onclick=()=>{n=n<7?n+1:1;draw()};
-  const pr=list=>{ $("printArea").innerHTML=list.map(k=>'<div class="print-sheet">'+WS.sheet(sc,k,lvl)+'</div>').join(""); setTimeout(()=>window.print(),50); };
-  $("print1").onclick=()=>pr([n]); $("printAll").onclick=()=>pr([1,2,3,4,5,6,7]);
-  addEventListener("keydown",e=>{if(e.key==="ArrowLeft")$("prev").click();if(e.key==="ArrowRight")$("next").click()});
+  [1,2,3].forEach(l=>{const b=document.createElement("button");b.className="btn";b.textContent=l+" "+["ghost","dashes","dots"][l-1];b.dataset.l=l;b.onclick=()=>{lvl=l;draw()};$("levels").appendChild(b)});
+  const step=d=>{const v=vis(); if(!v.length)return; const i=v.indexOf(n); n=v[(i<0?(d>0?-1:0):i)+d<0?v.length-1:((i<0?(d>0?-1:0):i)+d)%v.length]; draw()};
+  $("prev").onclick=()=>step(-1); $("next").onclick=()=>step(1);
+  const pr=list=>{ if(!list.length)return; $("printArea").innerHTML=list.map(k=>'<div class="print-sheet">'+WS.sheet(sc,k,lvl)+'</div>').join(""); setTimeout(()=>window.print(),50); };
+  $("print1").onclick=()=>pr(vis().indexOf(n)>=0?[n]:[]); $("printAll").onclick=()=>pr(vis());
+  addEventListener("keydown",e=>{if(e.key==="ArrowLeft")step(-1);if(e.key==="ArrowRight")step(1)});
   function draw(){
+   const v=vis();
+   if(VS.sceneGone(id)||!v.length){ $("page").innerHTML='<p style="padding:30px;text-align:center;font:26px var(--hand)">This scene is deleted on this device.<br><small style="font:600 16px var(--ui)">Restore it in ⚙️.</small></p>'; return; }
+   if(v.indexOf(n)<0) n=v[0];
    $("page").innerHTML=WS.sheet(sc,n,lvl);
-   document.querySelectorAll("#steps .tag").forEach(b=>b.classList.toggle("on",+b.dataset.n===n));
+   document.querySelectorAll("#steps .tag").forEach(b=>{b.hidden=v.indexOf(+b.dataset.n)<0; b.classList.toggle("on",+b.dataset.n===n)});
    document.querySelectorAll("#levels .btn").forEach(b=>b.classList.toggle("on",+b.dataset.l===lvl));
    history.replaceState(null,"","?id="+id+"&s="+n+"&level="+lvl);
   }
+  VS.mount({id:id,n:()=>n,onChange:k=>{ if(k==="scene"){location.href="index.html";return;} if(k==="level"){lvl=VS.level();} draw(); }});
   draw();
  }
 })();
-</script></body></html>
+</script>
+</body></html>

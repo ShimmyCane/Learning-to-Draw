@@ -27,12 +27,15 @@
  <div class="stage" id="stage"><div class="paper big" id="page"></div><div class="cap" id="ft"></div><div class="rule" id="rule"></div><p class="here" id="here"></p></div>
  <div id="extra"></div>
 </main>
+<script src="js/settings.js"></script>
 <script src="js/viz.js"></script>
 <script>
 (function(){
  const q=new URLSearchParams(location.search), id=q.get("id")||"VI-002", $=s=>document.getElementById(s);
- const s=document.createElement("script"); s.src="data/scenes/"+id+".js"; s.onerror=()=>$("sub").textContent="Scene "+id+" not found"; s.onload=start; document.head.appendChild(s);
+ const s=document.createElement("script"); s.src="data/scenes/"+id+".js"; s.onerror=()=>{$("sub").textContent="Scene "+id+" not found";VS.mount({})}; s.onload=start; document.head.appendChild(s);
  function start(){
+  VS.mount({id:id,onChange:k=>{ if(k==="scene"||VS.sceneGone(id)) location.href="index.html"; }});
+  if(VS.sceneGone(id)){ $("stage").innerHTML='<p style="padding:30px;text-align:center;font:26px var(--hand)">This scene is deleted on this device. Restore it in ⚙️.</p>'; return; }
   const sc=VI.scenes[id],F=VI.FRAMES; let i=Math.max(0,F.findIndex(f=>f.id===q.get("f"))),timer=null;
   $("sub").textContent=sc.title+" ("+sc.id+")"; $("sheets").href="sheet.html?id="+id; document.title=sc.title+" · gallery";
   Object.entries(VI.STEPS).forEach(([k,st])=>{const b=document.createElement("button");b.className="tag";b.dataset.step=k;b.textContent=k+". "+st.name;b.onclick=()=>{i=F.findIndex(f=>f.step===k);draw()};$("steps").appendChild(b)});
