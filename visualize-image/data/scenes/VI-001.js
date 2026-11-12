@@ -4,6 +4,7 @@
 VI.scenes["VI-001"] = {
   id: "VI-001",
   title: "A kitchen in an L",
+  labelIds: ["stove", "upper", "barD", "floor", "wall"],
   source: "private/VI-001.jpg",
   size: [1512, 2016],
   nice: [

@@ -19,7 +19,7 @@
 </header>
 <main class="wrap">
  <div class="quick">
-  <a class="btn go" href="crop.html">📷 Crop my own photo</a>
+  <a class="btn go" href="make.html">📷 Make a worksheet</a>
   <a class="btn mint" href="sheet.html?id=VI-002">🖨️ Print the kitchen sheets</a>
   <a class="btn" href="scene.html?id=VI-002">🖼️ Gallery view</a>
  </div>
@@ -34,16 +34,19 @@
  </ol></div>
  <p class="step">Worked pictures</p>
  <div class="cards" id="cards"></div>
+ <div id="mineWrap" hidden><p class="step">My worksheets</p><div class="cards" id="mineCards"></div></div>
  <p class="note">Each sheet fades its help: <b>1</b> trace, <b>2</b> dots, <b>3</b> on your own. See <a href="research/index.html">research</a>, <a href="archive/v1/index.html">V1 (archived)</a> and <code>process.md</code>.</p>
 </main>
 <script src="js/settings.js"></script>
 <script src="js/viz.js"></script>
 <script src="js/ws.js"></script>
+<script src="js/mine.js"></script>
 <script>
 (function(){
  const list=[["VI-002","Pass 2 · truer shapes (the favorite)",true],["VI-003","Pass 3 · closer and simpler",false],["VI-001","Pass 1 · the first try",false]];
  const box=document.getElementById("cards");
  VS.mount({onChange:()=>location.reload()});
+ VM.list().filter(id=>!VS.sceneGone(id)).forEach(id=>{const sc=VM.load(id);VI.scenes[id]=sc;document.getElementById("mineWrap").hidden=false;const c=document.createElement("div");c.className="card";c.innerHTML='<a href="sheet.html?id='+id+'&s=2" style="display:block">'+WS.sheet(sc,2,1).replace(' width="8.5in" height="11in"',' style="width:100%;height:auto;border:2px solid #eee4cc;border-radius:10px"')+'</a><b>My picture</b><div class="meta"><span>#'+id+'</span><span class="t">made in code (rough)</span></div><div class="links"><a href="sheet.html?id='+id+'">🖨️ Sheets</a><a href="scene.html?id='+id+'">🖼️ Gallery</a></div>';document.getElementById("mineCards").appendChild(c);});
  list.filter(x=>!VS.sceneGone(x[0])).forEach(([id,label,fav])=>{
   const s=document.createElement("script");s.src="data/scenes/"+id+".js";
   s.onload=()=>{const sc=VI.scenes[id],c=document.createElement("div");c.className="card";

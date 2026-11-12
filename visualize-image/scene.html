@@ -29,10 +29,11 @@
 </main>
 <script src="js/settings.js"></script>
 <script src="js/viz.js"></script>
+<script src="js/mine.js"></script>
 <script>
 (function(){
  const q=new URLSearchParams(location.search), id=q.get("id")||"VI-002", $=s=>document.getElementById(s);
- const s=document.createElement("script"); s.src="data/scenes/"+id+".js"; s.onerror=()=>{$("sub").textContent="Scene "+id+" not found";VS.mount({})}; s.onload=start; document.head.appendChild(s);
+ VM.loadScene(id,()=>start(),()=>{$("sub").textContent="Scene "+id+" not found";VS.mount({})});
  function start(){
   VS.mount({id:id,onChange:k=>{ if(k==="scene"||VS.sceneGone(id)) location.href="index.html"; }});
   if(VS.sceneGone(id)){ $("stage").innerHTML='<p style="padding:30px;text-align:center;font:26px var(--hand)">This scene is deleted on this device. Restore it in ⚙️.</p>'; return; }

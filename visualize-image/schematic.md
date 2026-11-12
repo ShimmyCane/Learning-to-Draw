@@ -33,7 +33,7 @@ Lenses applied to the final frame: round dots (halftone), octagon dots, triangle
 | Page | What it does |
 |---|---|
 | `index.html` | Home: the six steps in a row, scenes (placeholder), link back to the Index |
-| `crop.html` | Step 1 as a function: take or choose a photo, it suggests a crop (most contrast on a third) and a horizon from the edges, you drag the box, corner or horizon, and a preview zooms into the crop. Save on the device, copy for Claude, or print the step 1 sheet. The photo is never uploaded |
+| `make.html` | **Make a worksheet** (home button). A wizard: 1 take or choose a photo, 2 crop and frame, 3 to 8 each step drawn by code with a few settings (how many big shapes, 3 or 5 values, 3 to 5 colors, which dot lens), 9 save as `MY-n` and print all 7. (`crop.html` redirects here.) Step 1 as a function: take or choose a photo, it suggests a crop (most contrast on a third) and a horizon from the edges, you drag the box, corner or horizon, and a preview zooms into the crop. Save on the device, copy for Claude, or print the step 1 sheet. The photo is never uploaded |
 | `sheet.html?id=VI-002&s=1&level=1` | Seven printable Letter worksheets, one per step (crop, big shapes, add what sits on them, bold, light to dark, color, dots). Each has a finished Look example, a Your turn box, help level 1 to 3, and an inspired-by footer. Print one or all seven |
 | `scene.html?id=VI-002` | Gallery view: the 14 frames big, with Play and full screen. (Was `scene.html` in V1: ◀ ▶, the rule caption, step labels, a toggle to see the original photo |
 | `research/index.html` | What I was thinking, topics tracked |
@@ -57,3 +57,7 @@ Draws each frame as SVG from the scene: crop with thirds, horizon and the recedi
 ## Settings (`js/settings.js`)
 
 A ⚙️ button and drawer on every page: default help level (ghost, dashes, dots), **Delete** this sheet or this scene, a list of what is deleted with Restore, forget the saved photo, and links (home, V1, Learning to Draw). Delete means hide on this device (`vi.deletedSheets`, `vi.deletedScenes` in localStorage): nothing is erased, same idea as the Increment Viewer's Delete scene and the retire-don't-delete rule.
+
+## Scenes made in code (`js/mine.js`)
+
+`VM.build(img, {crop, hy, cp}, {masses, values, colors})`: shrinks the crop to a grid (about 48 wide), blurs, sorts pixels into five equal-count lightness levels, finds connected regions of one level, and turns each big region into a rectangle (if it fills its box) or a convex polygon of at most six corners. The largest regions become planes; the next ones become masses (anchors A, B, C are the three largest); smaller ones become secondary or overlapping figures. Priority comes from size and nearness to the strongest contrast; the smallest are priority 5 (left out). Colors are grouped into a small palette with k-means. Saved scenes live in `localStorage` (`vi.my`, `vi.my.MY-n`). The shapes are rough on purpose: a person (Claude) does the truer shapes, the vision and what to leave out.

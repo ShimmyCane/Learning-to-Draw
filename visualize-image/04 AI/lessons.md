@@ -16,3 +16,8 @@
 - **Nested SVG views** (`<svg viewBox=crop>`) let one scene draw both the example and the Your turn box; stroke widths must be divided by the scale.
 - **Long footers overflow Letter.** Shorten the title and size the font from the string length.
 - **Edge-energy contrast search is a weak heuristic.** It finds busy places, not the best subject; show it as a suggestion the learner can drag.
+
+## 2026-11-12 (round 3)
+- **Code can do the mechanical steps, not the creative ones.** Regions of light and dark give usable masses, values and a palette; a vision and what to leave out still need a person.
+- **Convex hulls make lumpy shapes.** Fine for a rough first pass; say so on screen.
+- **Share one scene loader** (`VM.loadScene`) so hand-built and made-in-code scenes open the same way.

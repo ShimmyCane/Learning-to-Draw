@@ -3,6 +3,7 @@
 VI.scenes["VI-003"] = {
   id: "VI-003", pass: 3, prev: "VI-002",
   title: "A kitchen in an L (pass 3: simpler, closer)",
+  labelIds: ["stove", "upper", "barD", "floor", "wall"],
   source: "private/VI-001.jpg", size: [1512, 2016],
   nice: [
     "The L of counter and the white stove are the whole story; the upper cabinets only repeat it.",

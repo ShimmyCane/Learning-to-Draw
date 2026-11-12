@@ -75,7 +75,7 @@
       case 3: g = shapes(sc, k, L.filter(l => l.step === 2), { stroke: GUIDE, w: 2.5, fill: "#fff" }) + shapes(sc, k, L.filter(l => l.step === 3), { stroke: INK, w: 3, fill: l => l.group === "overlap" ? "#fff" : "none" }); break;
       case 4: { const w = { 1: 9, 2: 6, 3: 3.5, 4: 1.6 }; g = shapes(sc, k, mid.filter(l => l.group !== "plane"), { stroke: INK, w: l => w[l.priority], fill: "#fff" }); break; }
       case 5: g = shapes(sc, k, mid, { stroke: "none", w: 0, fill: gray }); break;
-      case 6: g = shapes(sc, k, mid, { stroke: l => l.priority <= 2 ? INK : "none", w: 3, fill: gray }) + mid.filter(l => ["stove", "upper", "barD", "floor", "wall"].includes(l.id)).map(l => { const p = u.centroid(l); return `<text x="${p[0]}" y="${p[1]}" text-anchor="middle" font-family="${fam("hand")}" font-size="${(24 / k).toFixed(0)}" fill="${l.value > 2 ? INK : "#fff"}" stroke="${l.value > 2 ? "#fff" : INK}" stroke-width="${(1.2 / k).toFixed(1)}" paint-order="stroke">${esc(colorName(l.color))}</text>`; }).join(""); break;
+      case 6: { const big5 = mid.filter(l => l.group === "mass").sort((a, b) => area2(b) - area2(a)).slice(0, 5); g = shapes(sc, k, mid, { stroke: l => l.priority <= 2 ? INK : "none", w: 3, fill: gray }) + mid.filter(l => (sc.labelIds ? sc.labelIds.indexOf(l.id) >= 0 : big5.indexOf(l) >= 0)).map(l => { const p = u.centroid(l); return `<text x="${p[0]}" y="${p[1]}" text-anchor="middle" font-family="${fam("hand")}" font-size="${(24 / k).toFixed(0)}" fill="${l.value > 2 ? INK : "#fff"}" stroke="${l.value > 2 ? "#fff" : INK}" stroke-width="${(1.2 / k).toFixed(1)}" paint-order="stroke">${esc(colorName(l.color))}</text>`; }).join(""); break; }
       case 7: g = VI.filterSVG(sc, "dots"); break;
     }
     return view(sc, area, g).svg;

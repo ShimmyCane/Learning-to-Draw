@@ -21,7 +21,9 @@
 - [ ] Make Delete permanent (retire in `data/scenes/*.js` with `retired: true`) once Jimmy decides what to drop
 - [x] Printable sheets and large gallery view (V2)
 - [ ] Crop page: better contrast detection (it picked the left cabinet, not the stove, on the kitchen photo)
-- [ ] Scene builder: make steps 2 to 7 for a photo cropped on `crop.html` without help from Claude
+- [x] Make a worksheet wizard builds steps 2 to 7 in code (rough shapes)
+- [ ] Better code shapes: merge neighbors, edge-aware regions, objects instead of lightness blobs
+- [ ] Crop suggestion cut the house off a test picture; weigh whole objects, not only edge energy
 - [ ] Review flags and faces on the sheets, as in Learning to Draw
 - [ ] Read the Detail library repo references (attach it to a session)
 - [ ] Trace the layers from a photo semi-automatically instead of by hand
