@@ -8,15 +8,15 @@
 
 ## Done (round 1)
 - [x] Project folder, schematic, process, QC, AI notes, convo v0.1, research topics
+- [x] `scene.html` frame viewer, `js/viz.js` (14 frame kinds incl. four filters), first scene `VI-001` (museum kitchen)
 
 ## Now
 - [ ] Jimmy answers `convo/convo v0.1.md`
-- [ ] Upload the living-room photo and the 2-D result (into `private/`) to extract the real layer vocabulary
-- [ ] Hand-write the first scene JSON (`VI-001`) from them
+- [ ] Look at `scene.html?id=VI-001` and say what's off (shapes, anchors, priorities)
+- [ ] Upload the living-room photo and the 2-D result (into `private/`) to compare the layer vocabulary
 
 ## Next
-- [ ] `scene.html` frame viewer (◀ ▶, rule caption, original toggle)
-- [ ] Draw primitives from the scene JSON
-- [ ] Filters: dots, octagon dots, triangle facets, lines only
+- [ ] Trace the layers from a photo semi-automatically instead of by hand
+- [ ] Printable frame sheets
 - [ ] Try on a second, different image (outdoor, with a real horizon)
 - [ ] Link from the Index

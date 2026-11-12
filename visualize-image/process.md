@@ -34,4 +34,4 @@ Run these in order on any image. Each step ends with a frame and a one-line rule
 Apply each lens to the final frame and keep the ones that teach something. See `schematic.md`.
 
 ## Making a scene
-`data/scenes/<id>.json` as in `schematic.md`; the frames are drawn from it. Put the original photo in `private/` and note its name in `source`.
+`data/scenes/<id>.js` as in `schematic.md` (copy `VI-001.js`); the frames are drawn from it. Put the original photo in `private/` and note its name in `source`. Tip: find the horizon by extending two receding edges until they meet.

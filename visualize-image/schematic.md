@@ -1,7 +1,7 @@
 # Visualize Image — Schematic
 
 **Track:** B. Learn-by-doing (a method, shown one worked drawing at a time).
-**Status:** Round 1, design only. The workflow is drafted from the living-room example (photo and result not yet in the repo; they go in `private/` and `data/scenes/`).
+**Status:** Round 1b. Design plus a working viewer and one worked scene (`VI-001`, a museum kitchen). The living-room photo has not arrived yet.
 **Platform:** plain HTML/CSS/JS, no build, GitHub Pages. Linked from the Index.
 **Conversation:** `convo/convo v0.1.md`
 
@@ -33,14 +33,17 @@ Lenses applied to the final frame: round dots (halftone), octagon dots, triangle
 | Page | What it does |
 |---|---|
 | `index.html` | Home: the six steps in a row, scenes (placeholder), link back to the Index |
-| `scene.html?id=…` | One scene as frames: ◀ ▶, the rule caption, step labels, a toggle to see the original photo |
-| `filters.html?id=…` | The final frame under each filter |
+| `scene.html?id=VI-001` | One scene as 14 frames (steps 1–6, filters are frames 6a–6d): ◀ ▶, the rule caption, step labels, a toggle to see the original photo |
 | `research/index.html` | What I was thinking, topics tracked |
 
 ## Data
 
-A scene is one JSON file in `data/scenes/<id>.json`: `source` (private image path, never committed), `crop`, `horizon` (0–1 from top), `layers` (ordered back to front; each is a primitive: `type` circle, oval, rect or tri, `x y w h`, `priority` 1–5, `value` 0–4, `color`), `vision`, `leftOut`, `notes`. Frames are drawn from this; nothing hand-drawn per frame.
+A scene is one file, `data/scenes/<id>.js` (a JS file so it loads from `file://`), holding an object: `source` (private image path, never committed), `crop`, `horizon` (0–1 from top), `layers` (ordered back to front; each has `type` rect, poly, oval or circle, geometry `g` in photo pixels, `group` plane/mass/secondary/overlap, `priority` 1–5, `value` 0–4, `color`, optional `anchor`), `vision`, `leftOut`, `notes`. Frames are drawn from this; nothing hand-drawn per frame.
 
 ## Numbering
 
 Scenes `VI-001`, `VI-002` … ; filters `F-dots`, `F-octagons`, `F-facets`, `F-lines`. Retired ids are never reused.
+
+## Engine (`js/viz.js`)
+
+Draws each frame as SVG from the scene: crop with thirds, horizon and the receding lines that find it; planes; masses; anchors; secondary and overlapping figures; priority numbers; bold outlines by priority; five-gray values; palette. Filters draw the kept layers small on a canvas, sample color and lightness, and rebuild them as round dots, octagon dots, triangle facets or hatching lines. Priority 5 layers disappear from step 4 on (what was left back).
