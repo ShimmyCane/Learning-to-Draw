@@ -1,6 +1,6 @@
 /* Visualize Image V2: the worksheet engine. One scene -> seven Letter portrait sheets (850 x 1100 units), black and white,
    in the Learning to Draw look: header, title, one line, a finished "Look" example, "Your turn" box, help that fades
-   by level (1 = most help, 3 = least), footer with "inspired by". Ink is black, lines to trace are grey dashes. */
+   by level (1 ghost at 20%, 2 a few thin dashed lines on the largest shapes, 3 corner dots and a horizon dot), footer with "inspired by". Ink is black, lines to trace are grey dashes. */
 (function () {
   "use strict";
   const W = 850, H = 1100, INK = "#111", TRACE = "#8c8c8c", GUIDE = "#c9c9c9";
@@ -81,48 +81,38 @@
     return view(sc, area, g).svg;
   }
 
+  // ---------- help, in rising abstraction: 1 ghost (20%), 2 a few thin dashes, 3 corner dots + horizon dot ----------
+  const area2 = l => { const g = l.g; if (l.type === "rect") return g[2] * g[3]; if (l.type === "poly") { const xs = g.map(p => p[0]), ys = g.map(p => p[1]); return (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys)); } return l.type === "oval" ? 4 * g[2] * g[3] : 4 * g[2] * g[2]; };
+  function focus(sc, n) {   // the few largest shapes this step is about
+    const L = sc.layers;
+    const pool = n === 2 ? L.filter(l => l.step === 2 && l.group !== "plane" && l.priority < 5) : n === 3 ? L.filter(l => l.step === 3) : L.filter(l => l.priority < 5 && l.group !== "plane");
+    return pool.slice().sort((a, b) => area2(b) - area2(a)).slice(0, 5);
+  }
+  function corners(l) {
+    const g = l.g;
+    if (l.type === "rect") return [[g[0], g[1]], [g[0] + g[2], g[1]], [g[0] + g[2], g[1] + g[3]], [g[0], g[1] + g[3]]];
+    if (l.type === "poly") { if (g.length <= 6) return g; const xs = g.map(p => p[0]), ys = g.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys); return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]; }
+    if (l.type === "oval") return [[g[0] - g[2], g[1]], [g[0] + g[2], g[1]], [g[0], g[1] - g[3]], [g[0], g[1] + g[3]]];
+    return [[g[0] - g[2], g[1]], [g[0] + g[2], g[1]], [g[0], g[1] - g[2]], [g[0], g[1] + g[2]]];
+  }
   function turn(sc, st, lvl, area) {
-    const c = sc.crop, v = view(sc, area, ""), k = v.k, u = U(), L = sc.layers, s2 = L.filter(l => l.step === 2), s3 = L.filter(l => l.step === 3), mid = L.filter(l => l.priority < 5);
-    const anchors = s2.filter(l => l.anchor);
-    const frameRect = `<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" fill="none" stroke="${GUIDE}" stroke-width="${sw(k, 2)}"/>`;
-    const tr = (list, w) => shapes(sc, k, list, { stroke: TRACE, w: w || 3, dash: [11, 9] });
-    let g = frameRect;
-    switch (st.n) {
-      case 1: // thirds + the horizon + the dot to put the contrast on
-        if (lvl === 1) g += thirds(c, k, TRACE, 2.5, true) + horizonLine(sc, k, TRACE, [14, 9]) + `<circle cx="${sc.contrast.x}" cy="${sc.contrast.y}" r="${(10 / k).toFixed(1)}" fill="${INK}"/>`;
-        else if (lvl === 2) g += dots([1, 2].flatMap(i => [1, 2].map(j => [c.x + c.w * i / 3, c.y + c.h * j / 3])), k, 5) + ticks(c, k);
-        else g += ticks(c, k);
-        break;
-      case 2:
-        if (lvl === 1) g += tr(s2) + horizonLine(sc, k, TRACE, [14, 9]);
-        else if (lvl === 2) g += anchors.map(l => dots(u.pts(l), k, 5)).join("") + horizonLine(sc, k, TRACE, [14, 9]);
-        else g += anchors.map(l => { const p = u.centroid(l); return dots([p], k, 8, INK); }).join("") + ticks(c, k);
-        break;
-      case 3:
-        g += shapes(sc, k, s2, { stroke: GUIDE, w: 2.5, fill: "#fff" });
-        if (lvl === 1) g += tr(s3);
-        else if (lvl === 2) g += dots(s3.map(l => u.centroid(l)), k, 6);
-        break;
-      case 4:
-        if (lvl === 1) g += tr(mid.filter(l => l.group !== "plane"), 2.5) + mid.filter(l => l.group !== "plane" && l.priority <= 3).map(l => { const p = u.centroid(l); return badge(p[0], p[1], l.priority, k, l.priority <= 2); }).join("");
-        else if (lvl === 2) g += shapes(sc, k, mid.filter(l => l.priority <= 2), { stroke: TRACE, w: 3, dash: [11, 9] }) + mid.filter(l => l.priority <= 2).map(l => { const p = u.centroid(l); return badge(p[0], p[1], l.priority, k, true); }).join("");
-        else g += mid.filter(l => l.priority <= 3 && l.group !== "plane").map(l => dots([u.centroid(l)], k, 7, INK)).join("");
-        break;
-      case 5: { const sh = mid.filter(l => l.group !== "plane" || lvl === 1);
-        g += shapes(sc, k, lvl === 3 ? [] : mid.filter(l => lvl === 1 || l.priority <= 3), { stroke: TRACE, w: 2.5, fill: "#fff" });
-        if (lvl <= 2) g += mid.filter(l => lvl === 1 ? l.group !== "plane" || true : l.priority <= 2).map(l => { const p = u.centroid(l); return `<text x="${p[0]}" y="${p[1] + 8 / k}" text-anchor="middle" font-family="${fam("ui")}" font-weight="700" font-size="${(24 / k).toFixed(0)}" fill="${TRACE}">${l.value}</text>`; }).join("");
-        break; }
-      case 6:
-        g += shapes(sc, k, lvl === 3 ? [] : mid.filter(l => lvl === 1 || l.priority <= 2), { stroke: TRACE, w: 2.5, fill: "#fff" });
-        if (lvl <= 2) g += mid.filter(l => (lvl === 1 || l.priority <= 2) && l.group !== "secondary").map(l => { const p = u.centroid(l); return `<text x="${p[0]}" y="${p[1]}" text-anchor="middle" font-family="${fam("hand")}" font-size="${(24 / k).toFixed(0)}" fill="${TRACE}">${esc(colorName(l.color))}</text>`; }).join("");
-        break;
-      case 7: {
-        const cell = 30, pts2 = [];
-        for (let y = c.y + cell / 2; y < c.y + c.h; y += cell) for (let x = c.x + cell / 2; x < c.x + c.w; x += cell) pts2.push([x, y]);
-        g += (lvl <= 2 ? dots(pts2, k, 2.2, GUIDE) : "") + (lvl === 1 ? shapes(sc, k, mid.filter(l => l.priority <= 3 && l.group !== "plane"), { stroke: TRACE, w: 2, dash: [10, 8] }) : "");
-        break; }
+    const c = sc.crop, k = view(sc, area, "").k, n = st.n;
+    let g = `<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" fill="none" stroke="${GUIDE}" stroke-width="${sw(k, 2)}"/>`;
+    if (lvl === 1) {   // a ghost of the finished example at 20% opacity, to trace over
+      const ghost = n === 1 ? view(sc, area, sc.layers.map(l => U().shape(l, { fill: gray(l) })).join("")).svg : example(sc, st, area);
+      return view(sc, area, g).svg + `<g opacity=".2">${ghost}</g>`;
     }
-    return view(sc, area, g).svg;
+    if (lvl === 2) {   // a few thin dashed lines on the largest shapes (step 1: the thirds and the horizon)
+      if (n === 1) { g += thirds(c, k, TRACE, 2, true) + horizonLine(sc, k, TRACE, [10, 9]); }
+      else g += shapes(sc, k, focus(sc, n), { stroke: TRACE, w: 2, dash: [8, 8] });
+      return view(sc, area, g).svg;
+    }
+    // 3: just dots at the corners, and a ring where the horizon meets the left edge (if it is in the picture)
+    const pts = n === 1 ? [[c.x, c.y], [c.x + c.w, c.y], [c.x + c.w, c.y + c.h], [c.x, c.y + c.h], [sc.contrast.x, sc.contrast.y]] : focus(sc, n).flatMap(corners);
+    const inside = p => p[0] >= c.x && p[0] <= c.x + c.w && p[1] >= c.y && p[1] <= c.y + c.h;   // corners outside the picture are not shown
+    g += dots(pts.filter(inside), k, 6, INK);
+    if (sc.horizon.y >= c.y && sc.horizon.y <= c.y + c.h) g += `<circle cx="${c.x}" cy="${sc.horizon.y}" r="${(10 / k).toFixed(1)}" fill="#fff" stroke="${INK}" stroke-width="${sw(k, 3.5)}"/>`;
+    return view(sc, area, g).svg.replace('overflow="hidden"', 'overflow="visible"');   // dots on the edge stay whole
   }
 
   const lvlDots = n => "●".repeat(n) + "○".repeat(3 - n);

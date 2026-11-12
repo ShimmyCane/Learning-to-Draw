@@ -52,4 +52,8 @@ Draws each frame as SVG from the scene: crop with thirds, horizon and the recedi
 
 ## Worksheets (`js/ws.js`)
 
-`WS.sheet(scene, step 1–7, level 1–3)` returns one 850 × 1100 SVG. The example and the Your turn box are the scene's crop drawn into nested SVG views. Help fades: level 1 traces the shapes in grey dashes, level 2 gives dots at corners or centers, level 3 gives only ticks, anchors or an empty frame. Each step names its source in the footer (rule of thirds, block-in, Cézanne, lost and found edges, notan, Zorn, Ben-Day dots).
+`WS.sheet(scene, step 1–7, level 1–3)` returns one 850 × 1100 SVG. The example and the Your turn box are the scene's crop drawn into nested SVG views. Help fades in rising abstraction: level 1 is a ghost of the finished example at 20% opacity to trace over; level 2 is a few thin dashed lines on the largest shapes (step 1: the thirds and the horizon); level 3 is just dots at the corners of those shapes plus a ring where the horizon meets the left edge (if it is in the picture). Each step names its source in the footer (rule of thirds, block-in, Cézanne, lost and found edges, notan, Zorn, Ben-Day dots).
+
+## Settings (`js/settings.js`)
+
+A ⚙️ button and drawer on every page: default help level (ghost, dashes, dots), **Delete** this sheet or this scene, a list of what is deleted with Restore, forget the saved photo, and links (home, V1, Learning to Draw). Delete means hide on this device (`vi.deletedSheets`, `vi.deletedScenes` in localStorage): nothing is erased, same idea as the Increment Viewer's Delete scene and the retire-don't-delete rule.

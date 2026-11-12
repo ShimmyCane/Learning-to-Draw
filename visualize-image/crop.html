@@ -48,8 +48,10 @@
  </div>
  <div id="printArea" class="printOnly"></div>
 </main>
+<script src="js/settings.js"></script>
 <script>
 (function () {
+  VS.mount({});
   const $ = id => document.getElementById(id);
   const main = $("main"), mx = main.getContext("2d"), prev = $("prev"), px = prev.getContext("2d");
   let img = null, name = "photo", crop = null, hy = 0.4, cp = { x: .5, y: .5 }, zoom = .8, drag = null, anim = null;

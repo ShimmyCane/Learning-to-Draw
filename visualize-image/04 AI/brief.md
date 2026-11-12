@@ -14,3 +14,5 @@
 **Open questions:** `convo/convo v0.1.md`.
 
 **Round 2 (2026-11-12, V2):** Jimmy asked for graphics like Learning to Draw, V1 archived, crop and frame as a function of loading or taking a photo, and a printable worksheet that teaches how to draw as the end result. He likes pass 2 (VI-002). Built `css/app.css` (copy), `js/ws.js`, `sheet.html`, `crop.html`, restyled `index.html` and `scene.html`; V1 is in `archive/v1/`. The crop page's contrast detection is a simple edge-energy search and suggested the left cabinet on the kitchen photo; treat it as a first guess. Steps 2 to 7 for a new photo still need Claude to build a scene file.
+
+**Round 2b:** Jimmy asked for a ⚙️ settings button on every page, a delete option, and three help levels of rising abstraction (ghost at 20%, a few thin dashed lines on the largest shapes, corner dots plus a horizon dot). Done: `js/settings.js`, new `turn()` in `js/ws.js`. Delete hides on the device (reversible in ⚙️); permanent retire is on the to-do.
