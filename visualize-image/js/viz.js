@@ -83,7 +83,7 @@ VI.frameSVG = function (sc, f, showPhoto) {
   const vb = full ? `0 0 ${sc.size[0]} ${sc.size[1]}` : `${c.x} ${c.y} ${c.w} ${c.h}`;
   const sw = full ? 4 : 3, out = [];
   const add = (s) => out.push(s);
-  const horizon = () => add(`<line x1="${c.x}" y1="${sc.horizon.y}" x2="${c.x + c.w}" y2="${sc.horizon.y}" stroke="#c0392b" stroke-width="5" stroke-dasharray="26 16"/><text x="${c.x + c.w - 14}" y="${sc.horizon.y - 14}" text-anchor="end" font-size="40" fill="#c0392b" font-family="sans-serif">horizon</text>`);
+  const horizon = () => sc.horizon.y < c.y ? add(`<text x="${c.x + 24}" y="${c.y + 60}" font-size="44" fill="#c0392b" font-family="sans-serif">↑ horizon is above the picture</text>`) : add(`<line x1="${c.x}" y1="${sc.horizon.y}" x2="${c.x + c.w}" y2="${sc.horizon.y}" stroke="#c0392b" stroke-width="5" stroke-dasharray="26 16"/><text x="${c.x + c.w - 14}" y="${sc.horizon.y - 14}" text-anchor="end" font-size="40" fill="#c0392b" font-family="sans-serif">horizon</text>`);
   const grey = (l, st) => shape(l, { fill: "none", stroke: st || "#b9b9b9", "stroke-width": sw });
   add(`<rect x="${full ? 0 : c.x}" y="${full ? 0 : c.y}" width="${full ? sc.size[0] : c.w}" height="${full ? sc.size[1] : c.h}" fill="${PAPER}"/>`);
 

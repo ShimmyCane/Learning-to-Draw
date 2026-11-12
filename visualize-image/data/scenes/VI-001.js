@@ -31,7 +31,7 @@ VI.scenes["VI-001"] = {
   notes: {
     "1": "Crop, thirds, horizon (dashed) and the two receding edges that find it.",
     "2a": "Wall and floor first. The horizon sits high, so the floor is a big, dark shape.",
-    "2b": "Eight big shapes, back to front. Squint: it still reads as a kitchen.",
+    "2b": "Eleven shapes, back to front. More than the five to eight the process asks for. Squint: it still reads as a kitchen.",
     "2c": "Three anchors: upper cabinets (A), stove (B), right counter top (C).",
     "3a": "Pan, doors, burners and knobs, each placed against an anchor.",
     "3b": "The cream counter face and the bar top overlap what is behind them.",
