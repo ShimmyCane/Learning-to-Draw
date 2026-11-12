@@ -10,3 +10,9 @@
 - **Scenes are `.js`, not `.json`,** so the pages work from `file://` with no server.
 - **A layer marked priority 5 must not be a plane.** The wall was priority 5 and vanished from the value frame; planes are 4 at most.
 - **Number badges collide.** Label only the shapes that matter in the priority frame.
+
+## 2026-11-12 (round 2)
+- **Match the sibling project's look, not just its words.** The first viewer was plain; reusing Learning to Draw's `app.css` and sheet frame made it feel like the same family and printable.
+- **Nested SVG views** (`<svg viewBox=crop>`) let one scene draw both the example and the Your turn box; stroke widths must be divided by the scale.
+- **Long footers overflow Letter.** Shorten the title and size the font from the string length.
+- **Edge-energy contrast search is a weak heuristic.** It finds busy places, not the best subject; show it as a suggestion the learner can drag.

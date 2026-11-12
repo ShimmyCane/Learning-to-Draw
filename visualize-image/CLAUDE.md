@@ -8,9 +8,10 @@ Purpose: take any 2-D image (a photo of a room, a street, a still life) and teac
 - AI notes: `04 AI/brief.md` and `04 AI/lessons.md`
 - Shared conventions: the Index repo's root `CLAUDE.md` (public repo, privacy) and `02 Refs/Skills/` (not in every session; follow from `convo/convo v0.1.md` if absent)
 
-How to run: open `index.html` (works from the file or GitHub Pages; no server).
+How to run: open `index.html` (works from the file or GitHub Pages; no server). Pages: `crop.html` (load or take a photo, see the crop and zoom), `sheet.html?id=VI-002` (seven printable Letter worksheets, help levels 1 to 3), `scene.html?id=VI-002` (large gallery view). V1 is archived in `archive/v1/`.
 
 Rules:
+- The end result is a printable worksheet that teaches how to draw (Learning to Draw look: Letter portrait, black and white, Look then Your turn, help fades by level, footer with "inspired by"). Gallery view is the on-screen extra.
 - Any image in, same six steps out. Nothing is specific to the living room; it is only the first example (slot `data/scenes/`).
 - **Big picture first.** Horizon, then background planes, then the biggest masses, before any object. Say where the horizon is in every scene.
 - Every frame says what the step looked for (the rule) in one line, so a learner can repeat it on their own image.

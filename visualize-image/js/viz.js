@@ -163,3 +163,6 @@ VI.filterSVG = function (sc, kind) {
   }
   return o.join("");
 };
+
+// shared with the worksheet engine (js/ws.js)
+VI.util = { shape, centroid, pts, S, INK, PAPER };
