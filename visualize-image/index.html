@@ -1,36 +1,53 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Visualize Image</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
 <style>
-:root{--ink:#1b1b1b;--paper:#fffdf7;--sun:#ffd95a}
-@media(prefers-color-scheme:dark){:root{--ink:#f2f0ea;--paper:#1c1c1e;--sun:#8a6d00}}
-body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.5 system-ui,sans-serif}
-main{max-width:46rem;margin:0 auto;padding:16px}
-h1{font-size:1.7rem;margin:.2em 0}
-ol{list-style:none;padding:0;display:grid;gap:12px}
-li{border:2px solid var(--ink);border-radius:14px;padding:12px 14px}
-li b{background:var(--sun);border-radius:8px;padding:0 8px;margin-right:6px}
-a{color:inherit}
-.note{opacity:.8}
+ .quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:4px 0 14px}
+ .quick .btn{width:100%}
+ .card .links{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+ .card .links a{font-size:14px;background:var(--mint);border:2px solid var(--ink);border-radius:10px;padding:2px 9px;text-decoration:none;color:var(--ink)}
+ .card .star{position:absolute;top:8px;right:8px;font-size:24px}
+ ol.six{margin:0;padding-left:1.2em}
 </style></head>
-<body><main>
-<p><a href="../index.html">← Learning to Draw</a></p>
-<h1>Visualize Image</h1>
-<p>Take any image and learn to draw it, one step at a time.</p>
-<ol>
-<li><b>1</b><strong>Crop and frame.</strong> What's interesting? Where's the contrast? Where's the horizon?</li>
-<li><b>2</b><strong>Mass.</strong> The biggest shapes as flat layers, back to front. These are your anchors.</li>
-<li><b>3</b><strong>Construct.</strong> Smaller figures, then overlapping ones, then rank what matters.</li>
-<li><b>4</b><strong>Bold.</strong> Trace what serves the vision; let the rest fade.</li>
-<li><b>5</b><strong>Value and color.</strong> Light to dark first, then a small palette.</li>
-<li><b>6</b><strong>Filters.</strong> Dots, octagon dots, facets, only lines.</li>
-</ol>
-<h2>Scenes</h2>
-<p>One photo, the six steps run three times (14 frames each; ◀ ▶ or arrow keys). Each pass is also tracked in the Increment Viewer.</p>
-<ul>
-<li><a href="scene.html?id=VI-001"><strong>VI-001 · pass 1</strong></a>: the first try.</li>
-<li><a href="scene.html?id=VI-002"><strong>VI-002 · pass 2</strong></a>: shapes redrawn against the photo.</li>
-<li><a href="scene.html?id=VI-003"><strong>VI-003 · pass 3</strong></a>: closer crop, at most eight masses, three values, five colors.</li>
-</ul>
-<p class="note">See <a href="research/index.html">research</a> and <code>process.md</code>.</p>
-</main></body></html>
+<body>
+<header class="top">
+ <h1 class="title">Visualize Image <small>Learn to draw any picture: crop, big shapes, details, bold lines, light and color</small></h1>
+ <a class="chip" href="../index.html">← Learning to Draw</a>
+</header>
+<main class="wrap">
+ <div class="quick">
+  <a class="btn go" href="crop.html">📷 Crop my own photo</a>
+  <a class="btn mint" href="sheet.html?id=VI-002">🖨️ Print the kitchen sheets</a>
+  <a class="btn" href="scene.html?id=VI-002">🖼️ Gallery view</a>
+ </div>
+ <p class="step">Six steps, seven sheets</p>
+ <div class="paper" style="padding:12px 18px"><ol class="six">
+  <li><b>Crop and frame:</b> find the best part, put what you love on a third.</li>
+  <li><b>Big shapes first:</b> the horizon, then only the biggest shapes.</li>
+  <li><b>Add what sits on them:</b> smaller shapes, then the ones that overlap.</li>
+  <li><b>Make the lines bold:</b> press hard on what matters, leave some out.</li>
+  <li><b>Light to dark</b> and <b>a few colors</b>.</li>
+  <li><b>See it as dots</b>, facets or lines.</li>
+ </ol></div>
+ <p class="step">Worked pictures</p>
+ <div class="cards" id="cards"></div>
+ <p class="note">Each sheet fades its help: <b>1</b> trace, <b>2</b> dots, <b>3</b> on your own. See <a href="research/index.html">research</a>, <a href="archive/v1/index.html">V1 (archived)</a> and <code>process.md</code>.</p>
+</main>
+<script src="js/viz.js"></script>
+<script src="js/ws.js"></script>
+<script>
+(function(){
+ const list=[["VI-002","Pass 2 · truer shapes (the favorite)",true],["VI-003","Pass 3 · closer and simpler",false],["VI-001","Pass 1 · the first try",false]];
+ const box=document.getElementById("cards");
+ list.forEach(([id,label,fav])=>{
+  const s=document.createElement("script");s.src="data/scenes/"+id+".js";
+  s.onload=()=>{const sc=VI.scenes[id],c=document.createElement("div");c.className="card";
+   c.innerHTML=(fav?'<span class="star">⭐</span>':"")+'<a href="sheet.html?id='+id+'&s=2" style="display:block">'+WS.sheet(sc,2,1).replace(' width="8.5in" height="11in"',' style="width:100%;height:auto;border:2px solid #eee4cc;border-radius:10px"')+'</a><b>'+sc.title.replace(/\s*\(.*\)$/,"")+'</b><div class="meta"><span>#'+id+'</span><span class="t">'+label+'</span></div><div class="links"><a href="sheet.html?id='+id+'">🖨️ Sheets</a><a href="scene.html?id='+id+'">🖼️ Gallery</a></div>';
+   box.appendChild(c);};
+  document.head.appendChild(s);
+ });
+})();
+</script></body></html>

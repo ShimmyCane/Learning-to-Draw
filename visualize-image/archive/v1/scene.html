@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Visualize Image scene</title>
+<style>
+:root{--ink:#1b1b1b;--paper:#fffdf7;--card:#fff;--sun:#ffd95a;--mute:#666}
+@media(prefers-color-scheme:dark){:root{--ink:#f2f0ea;--paper:#1c1c1e;--card:#2a2a2d;--sun:#8a6d00;--mute:#aaa}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.45 system-ui,sans-serif}
+main{max-width:46rem;margin:0 auto;padding:12px 16px 40px}
+a{color:inherit}
+h1{font-size:1.4rem;margin:.3em 0}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.steps button{font:inherit;font-size:.9rem;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 12px;min-height:40px;cursor:pointer}
+.steps button[aria-current=true]{background:var(--sun)}
+.stage{background:#fffdf7;border:2px solid var(--ink);border-radius:14px;overflow:hidden}
+.stage svg{display:block;width:100%;height:auto;max-height:70vh}
+.nav{display:flex;gap:8px;align-items:center;margin:10px 0}
+.nav button{font:inherit;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:12px;min-height:44px;padding:4px 16px;cursor:pointer}
+.nav .t{flex:1;text-align:center;font-weight:700}
+.rule{background:var(--sun);border-radius:12px;padding:8px 12px;margin:8px 0}
+.here{color:var(--mute)}
+.photo{margin:6px 0}
+ul{margin:.3em 0;padding-left:1.2em}
+.hide{display:none}
+</style></head>
+<body><main>
+<p><a href="index.html">← V1 home</a></p>
+<h1 id="title"></h1>
+<div class="steps" id="steps" role="tablist"></div>
+<div class="stage" id="stage"></div>
+<div class="nav"><button id="prev" aria-label="Previous frame">◀</button><span class="t" id="ft"></span><button id="next" aria-label="Next frame">▶</button></div>
+<div class="rule" id="rule"></div>
+<p class="here" id="here"></p>
+<label class="photo" id="photoRow"><input type="checkbox" id="photo"> Show my photo (only on this device)</label>
+<div id="extra"></div>
+</main>
+<script src="viz.js"></script>
+<script>
+(function () {
+  const q = new URLSearchParams(location.search), id = q.get("id") || "VI-001";
+  const s = document.createElement("script"); s.src = "../../data/scenes/" + id + ".js";
+  s.onerror = () => { document.getElementById("title").textContent = "Scene " + id + " not found"; };
+  s.onload = start; document.head.appendChild(s);
+
+  function start() {
+    const sc = VI.scenes[id], F = VI.FRAMES; let i = Math.max(0, F.findIndex(f => f.id === q.get("f")));
+    let hasPhoto = false;
+    const img = new Image(); img.onload = () => { hasPhoto = true; document.getElementById("photoRow").classList.remove("hide"); }; img.src = "../../" + sc.source;
+    document.getElementById("photoRow").classList.add("hide");
+    document.title = sc.title + " · Visualize Image";
+    document.getElementById("title").textContent = sc.title + " (" + sc.id + ")";
+    const stepsEl = document.getElementById("steps");
+    Object.entries(VI.STEPS).forEach(([k, st]) => {
+      const b = document.createElement("button"); b.textContent = k + ". " + st.name; b.dataset.step = k;
+      b.onclick = () => { i = F.findIndex(f => f.step === k); draw(); }; stepsEl.appendChild(b);
+    });
+    const li = (a) => "<ul>" + a.map(x => "<li>" + x + "</li>").join("") + "</ul>";
+    function draw() {
+      const f = F[i], st = VI.STEPS[f.step], show = document.getElementById("photo").checked && hasPhoto;
+      document.getElementById("stage").innerHTML = VI.frameSVG(sc, f, show);
+      document.getElementById("ft").textContent = f.id + " · " + f.title;
+      document.getElementById("rule").innerHTML = "<b>Rule:</b> " + st.rule;
+      document.getElementById("here").textContent = "In this scene: " + (sc.notes[f.id] || "");
+      stepsEl.querySelectorAll("button").forEach(b => b.setAttribute("aria-current", b.dataset.step === f.step));
+      let x = "";
+      if (f.id === "1") x = "<h3>What's nice</h3>" + li(sc.nice) + "<p><b>Crop:</b> " + sc.crop.why + "</p><p><b>Contrast (blue ring):</b> " + sc.contrast.why + "</p><p><b>Horizon:</b> " + sc.horizon.how + "</p><h3>Try moving</h3>" + li(sc.moves);
+      if (f.id === "4") x = "<p><b>Vision:</b> " + sc.vision + "</p><h3>Left back</h3>" + li(sc.leftOut);
+      document.getElementById("extra").innerHTML = x;
+      history.replaceState(null, "", "?id=" + id + "&f=" + f.id);
+    }
+    document.getElementById("prev").onclick = () => { i = (i + F.length - 1) % F.length; draw(); };
+    document.getElementById("next").onclick = () => { i = (i + 1) % F.length; draw(); };
+    document.getElementById("photo").onchange = draw;
+    addEventListener("keydown", e => { if (e.key === "ArrowLeft") document.getElementById("prev").click(); if (e.key === "ArrowRight") document.getElementById("next").click(); });
+    draw();
+  }
+})();
+</script></body></html>

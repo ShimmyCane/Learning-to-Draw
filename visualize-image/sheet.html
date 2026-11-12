@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Visualize Image Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+ .layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(240px,1fr);gap:18px;align-items:start}
+ @media(max-width:820px){.layout{grid-template-columns:1fr}}
+ .panel{background:#fff;border:var(--line);border-radius:18px 18px 18px 6px;box-shadow:var(--pop);padding:12px 14px;margin-bottom:14px}
+ .panel h3{font:24px var(--hand);margin:0 0 6px}
+ .steps{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+</style></head>
+<body>
+<header class="top"><h1 class="title"><a href="index.html">Visualize Image</a> <small id="sub">…</small></h1></header>
+<main class="wrap">
+ <div class="steps noprint" id="steps"></div>
+ <div class="row noprint" style="margin-bottom:12px">
+  <button class="btn" id="prev" type="button">◀</button>
+  <button class="btn go" id="print1" type="button">🖨️ Print this one</button>
+  <button class="btn go" id="printAll" type="button">🖨️ Print all 7</button>
+  <button class="btn" id="next" type="button">▶</button>
+ </div>
+ <div class="layout">
+  <div class="paper fit" id="page"></div>
+  <div class="noprint">
+   <div class="panel"><h3>Help</h3><div class="row" id="levels"></div><p><small>1 = most help (trace), 2 = some (dots), 3 = none. Levels are about help, not age.</small></p></div>
+   <div class="panel"><h3>See it large</h3><p><a class="btn mint" id="gallery" href="#">🖼️ Gallery view</a></p></div>
+  </div>
+ </div>
+ <div id="printArea" class="printOnly"></div>
+</main>
+<script src="js/viz.js"></script>
+<script src="js/ws.js"></script>
+<script>
+(function(){
+ const q=new URLSearchParams(location.search), id=q.get("id")||"VI-002";
+ let n=Math.min(7,Math.max(1,+q.get("s")||1)), lvl=Math.min(3,Math.max(1,+q.get("level")||1));
+ const $=s=>document.getElementById(s);
+ const sc0=document.createElement("script"); sc0.src="data/scenes/"+id+".js"; sc0.onload=start; sc0.onerror=()=>$("sub").textContent="Scene "+id+" not found"; document.head.appendChild(sc0);
+ function start(){
+  const sc=VI.scenes[id]; document.title="#"+id+" · Visualize Image";
+  $("sub").textContent=sc.title+" ("+sc.id+")"; $("gallery").href="scene.html?id="+id;
+  WS.STEPS.forEach(st=>{const b=document.createElement("button");b.className="tag";b.textContent=st.n+". "+st.title;b.dataset.n=st.n;b.onclick=()=>{n=st.n;draw()};$("steps").appendChild(b)});
+  [1,2,3].forEach(l=>{const b=document.createElement("button");b.className="btn";b.textContent=l+" "+"●".repeat(l);b.dataset.l=l;b.onclick=()=>{lvl=l;draw()};$("levels").appendChild(b)});
+  $("prev").onclick=()=>{n=n>1?n-1:7;draw()}; $("next").onclick=()=>{n=n<7?n+1:1;draw()};
+  const pr=list=>{ $("printArea").innerHTML=list.map(k=>'<div class="print-sheet">'+WS.sheet(sc,k,lvl)+'</div>').join(""); setTimeout(()=>window.print(),50); };
+  $("print1").onclick=()=>pr([n]); $("printAll").onclick=()=>pr([1,2,3,4,5,6,7]);
+  addEventListener("keydown",e=>{if(e.key==="ArrowLeft")$("prev").click();if(e.key==="ArrowRight")$("next").click()});
+  function draw(){
+   $("page").innerHTML=WS.sheet(sc,n,lvl);
+   document.querySelectorAll("#steps .tag").forEach(b=>b.classList.toggle("on",+b.dataset.n===n));
+   document.querySelectorAll("#levels .btn").forEach(b=>b.classList.toggle("on",+b.dataset.l===lvl));
+   history.replaceState(null,"","?id="+id+"&s="+n+"&level="+lvl);
+  }
+  draw();
+ }
+})();
+</script></body></html>

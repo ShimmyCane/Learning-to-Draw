@@ -1,78 +1,57 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Visualize Image scene</title>
+<title>Visualize Image gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
 <style>
-:root{--ink:#1b1b1b;--paper:#fffdf7;--card:#fff;--sun:#ffd95a;--mute:#666}
-@media(prefers-color-scheme:dark){:root{--ink:#f2f0ea;--paper:#1c1c1e;--card:#2a2a2d;--sun:#8a6d00;--mute:#aaa}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.45 system-ui,sans-serif}
-main{max-width:46rem;margin:0 auto;padding:12px 16px 40px}
-a{color:inherit}
-h1{font-size:1.4rem;margin:.3em 0}
-.steps{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
-.steps button{font:inherit;font-size:.9rem;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 12px;min-height:40px;cursor:pointer}
-.steps button[aria-current=true]{background:var(--sun)}
-.stage{background:#fffdf7;border:2px solid var(--ink);border-radius:14px;overflow:hidden}
-.stage svg{display:block;width:100%;height:auto;max-height:70vh}
-.nav{display:flex;gap:8px;align-items:center;margin:10px 0}
-.nav button{font:inherit;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:12px;min-height:44px;padding:4px 16px;cursor:pointer}
-.nav .t{flex:1;text-align:center;font-weight:700}
-.rule{background:var(--sun);border-radius:12px;padding:8px 12px;margin:8px 0}
-.here{color:var(--mute)}
-.photo{margin:6px 0}
-ul{margin:.3em 0;padding-left:1.2em}
-.hide{display:none}
+ .big{max-width:min(100%,calc((100dvh - 250px) * var(--ar,1)));margin:0 auto}
+ .big svg{display:block;width:100%;height:auto}
+ .steps{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+ .cap{font:26px var(--hand);margin:10px 0 2px;text-align:center}
+ .rule{text-align:center;font-weight:600}
+ .here{text-align:center;opacity:.8;margin:4px 0 0}
+ .stage:fullscreen{background:var(--paper);display:flex;flex-direction:column;justify-content:center;padding:16px}
+ .stage:fullscreen .big{max-width:min(96vw,calc((100dvh - 170px) * var(--ar,1)))}
 </style></head>
-<body><main>
-<p><a href="index.html">← Visualize Image</a></p>
-<h1 id="title"></h1>
-<div class="steps" id="steps" role="tablist"></div>
-<div class="stage" id="stage"></div>
-<div class="nav"><button id="prev" aria-label="Previous frame">◀</button><span class="t" id="ft"></span><button id="next" aria-label="Next frame">▶</button></div>
-<div class="rule" id="rule"></div>
-<p class="here" id="here"></p>
-<label class="photo" id="photoRow"><input type="checkbox" id="photo"> Show my photo (only on this device)</label>
-<div id="extra"></div>
+<body>
+<header class="top"><h1 class="title"><a href="index.html">Visualize Image</a> <small id="sub">…</small></h1><a class="chip" id="sheets" href="#">🖨️ Sheets</a></header>
+<main class="wrap">
+ <div class="steps" id="steps"></div>
+ <div class="row" style="margin-bottom:10px;justify-content:center">
+  <button class="btn" id="prev" type="button" aria-label="Previous">◀</button>
+  <button class="btn on" id="auto" type="button">▶ Play</button>
+  <button class="btn" id="next" type="button" aria-label="Next">▶|</button>
+  <button class="btn mint" id="full" type="button">⛶ Full screen</button>
+ </div>
+ <div class="stage" id="stage"><div class="paper big" id="page"></div><div class="cap" id="ft"></div><div class="rule" id="rule"></div><p class="here" id="here"></p></div>
+ <div id="extra"></div>
 </main>
 <script src="js/viz.js"></script>
 <script>
-(function () {
-  const q = new URLSearchParams(location.search), id = q.get("id") || "VI-001";
-  const s = document.createElement("script"); s.src = "data/scenes/" + id + ".js";
-  s.onerror = () => { document.getElementById("title").textContent = "Scene " + id + " not found"; };
-  s.onload = start; document.head.appendChild(s);
-
-  function start() {
-    const sc = VI.scenes[id], F = VI.FRAMES; let i = Math.max(0, F.findIndex(f => f.id === q.get("f")));
-    let hasPhoto = false;
-    const img = new Image(); img.onload = () => { hasPhoto = true; document.getElementById("photoRow").classList.remove("hide"); }; img.src = sc.source;
-    document.getElementById("photoRow").classList.add("hide");
-    document.title = sc.title + " · Visualize Image";
-    document.getElementById("title").textContent = sc.title + " (" + sc.id + ")";
-    const stepsEl = document.getElementById("steps");
-    Object.entries(VI.STEPS).forEach(([k, st]) => {
-      const b = document.createElement("button"); b.textContent = k + ". " + st.name; b.dataset.step = k;
-      b.onclick = () => { i = F.findIndex(f => f.step === k); draw(); }; stepsEl.appendChild(b);
-    });
-    const li = (a) => "<ul>" + a.map(x => "<li>" + x + "</li>").join("") + "</ul>";
-    function draw() {
-      const f = F[i], st = VI.STEPS[f.step], show = document.getElementById("photo").checked && hasPhoto;
-      document.getElementById("stage").innerHTML = VI.frameSVG(sc, f, show);
-      document.getElementById("ft").textContent = f.id + " · " + f.title;
-      document.getElementById("rule").innerHTML = "<b>Rule:</b> " + st.rule;
-      document.getElementById("here").textContent = "In this scene: " + (sc.notes[f.id] || "");
-      stepsEl.querySelectorAll("button").forEach(b => b.setAttribute("aria-current", b.dataset.step === f.step));
-      let x = "";
-      if (f.id === "1") x = "<h3>What's nice</h3>" + li(sc.nice) + "<p><b>Crop:</b> " + sc.crop.why + "</p><p><b>Contrast (blue ring):</b> " + sc.contrast.why + "</p><p><b>Horizon:</b> " + sc.horizon.how + "</p><h3>Try moving</h3>" + li(sc.moves);
-      if (f.id === "4") x = "<p><b>Vision:</b> " + sc.vision + "</p><h3>Left back</h3>" + li(sc.leftOut);
-      document.getElementById("extra").innerHTML = x;
-      history.replaceState(null, "", "?id=" + id + "&f=" + f.id);
-    }
-    document.getElementById("prev").onclick = () => { i = (i + F.length - 1) % F.length; draw(); };
-    document.getElementById("next").onclick = () => { i = (i + 1) % F.length; draw(); };
-    document.getElementById("photo").onchange = draw;
-    addEventListener("keydown", e => { if (e.key === "ArrowLeft") document.getElementById("prev").click(); if (e.key === "ArrowRight") document.getElementById("next").click(); });
-    draw();
+(function(){
+ const q=new URLSearchParams(location.search), id=q.get("id")||"VI-002", $=s=>document.getElementById(s);
+ const s=document.createElement("script"); s.src="data/scenes/"+id+".js"; s.onerror=()=>$("sub").textContent="Scene "+id+" not found"; s.onload=start; document.head.appendChild(s);
+ function start(){
+  const sc=VI.scenes[id],F=VI.FRAMES; let i=Math.max(0,F.findIndex(f=>f.id===q.get("f"))),timer=null;
+  $("sub").textContent=sc.title+" ("+sc.id+")"; $("sheets").href="sheet.html?id="+id; document.title=sc.title+" · gallery";
+  Object.entries(VI.STEPS).forEach(([k,st])=>{const b=document.createElement("button");b.className="tag";b.dataset.step=k;b.textContent=k+". "+st.name;b.onclick=()=>{i=F.findIndex(f=>f.step===k);draw()};$("steps").appendChild(b)});
+  const li=a=>"<ul>"+a.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+  function draw(){
+   const f=F[i],st=VI.STEPS[f.step]; $("page").innerHTML=VI.frameSVG(sc,f,false);
+   const c=f.kind==="crop"?sc.size:[sc.crop.w,sc.crop.h]; $("page").style.setProperty("--ar",c[0]/c[1]); $("stage").style.setProperty("--ar",c[0]/c[1]);
+   $("ft").textContent=f.id+" · "+f.title; $("rule").textContent=st.rule; $("here").textContent="In this picture: "+(sc.notes[f.id]||"");
+   document.querySelectorAll("#steps .tag").forEach(b=>b.classList.toggle("on",b.dataset.step===f.step));
+   let x=""; if(f.id==="1") x='<div class="panel paper" style="margin-top:14px;padding:10px 16px"><h3 style="font:24px var(--hand);margin:0">What is nice</h3>'+li(sc.nice)+'<p><b>Crop:</b> '+sc.crop.why+'</p><p><b>Horizon:</b> '+sc.horizon.how+'</p><h3 style="font:24px var(--hand);margin:0">Try moving</h3>'+li(sc.moves)+'</div>';
+   if(f.id==="4") x='<div class="panel paper" style="margin-top:14px;padding:10px 16px"><p><b>Vision:</b> '+sc.vision+'</p><h3 style="font:24px var(--hand);margin:0">Left back</h3>'+li(sc.leftOut)+'</div>';
+   $("extra").innerHTML=x; history.replaceState(null,"","?id="+id+"&f="+f.id);
   }
+  const go=d=>{i=(i+d+F.length)%F.length;draw()};
+  $("prev").onclick=()=>go(-1); $("next").onclick=()=>go(1);
+  $("auto").onclick=()=>{ if(timer){clearInterval(timer);timer=null;$("auto").textContent="▶ Play";$("auto").classList.add("on")} else {timer=setInterval(()=>go(1),3500);$("auto").textContent="⏸ Pause";$("auto").classList.remove("on")} };
+  $("full").onclick=()=>{ const e=$("stage"); document.fullscreenElement?document.exitFullscreen():(e.requestFullscreen&&e.requestFullscreen()) };
+  addEventListener("keydown",e=>{if(e.key==="ArrowLeft")go(-1);if(e.key==="ArrowRight")go(1)});
+  draw();
+ }
 })();
 </script></body></html>
